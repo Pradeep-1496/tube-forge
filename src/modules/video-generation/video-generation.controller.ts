@@ -19,16 +19,16 @@ export class VideoGenerationController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.videoGenerationService.findOne(+id);
+    return this.videoGenerationService.findOne(id);
   }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateVideoGenerationDto: UpdateVideoGenerationDto) {
-    return this.videoGenerationService.update(+id, updateVideoGenerationDto);
+    return this.videoGenerationService.update(id, updateVideoGenerationDto);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.videoGenerationService.remove(+id);
+    return this.videoGenerationService.remove(id);
   }
 }
