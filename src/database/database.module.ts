@@ -1,0 +1,21 @@
+import { Module } from '@nestjs/common';
+import { SequelizeModule } from '@nestjs/sequelize';
+import 'dotenv/config';
+import { Metadata } from 'src/common/models/metadata.model';
+
+@Module({
+  imports: [
+    SequelizeModule.forRoot({
+      dialect: 'postgres',
+      host: process.env.DB_HOST || 'localhost',
+      port: parseInt(process.env.DB_PORT || '5432', 10),
+      username: process.env.DB_USERNAME || 'postgres',
+      database: process.env.DB_NAME,
+      password: process.env.DB_PASSWORD,
+      autoLoadModels: true,
+      synchronize: true,
+      models: [Metadata],
+    }),
+  ],
+})
+export class DatabaseModule {}
