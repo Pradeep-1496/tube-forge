@@ -24,7 +24,7 @@ export class BackgroundImageProvider implements OnModuleInit {
   }
 
   private cacheAllPortraitImages() {
-    const filenames = ['1.jpg', '2.jpg', '3.jpg', '4.jpg', '5.jpg'];
+    const filenames = ['1.jpg', '2.jpg'];
     for (const filename of filenames) {
       const fullPath = join(this.PORTRAIT_DIR, filename);
       try {

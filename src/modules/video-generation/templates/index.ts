@@ -1,4 +1,4 @@
-export { Glassmorphism } from '../templates/Glassmorphism.template';
+export { Glassmorphism } from '../templates/glassmorphism.template';
 export { NeonCard } from '../templates/neon-card.template';
 export { LuxuryGold } from '../templates/luxury-gold.template';
 export { ViralShorts } from '../templates/viral-shorts.template';
