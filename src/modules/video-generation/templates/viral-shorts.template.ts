@@ -19,7 +19,7 @@ export function ViralShorts(
 <head><style>
   @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&display=swap');
 </style></head>
-<body style="margin:0;width:1080px;height:1920px;background:#18181b;${bgCss}display:flex;justify-content:center;align-items:center;font-family:Montserrat,sans-serif;position:relative;overflow:hidden;">
+<body style="margin:0;width:1080px;height:1920px;background-color:#18181b;${bgCss}display:flex;justify-content:center;align-items:center;font-family:Montserrat,sans-serif;position:relative;overflow:hidden;">
 
 <div style="position:absolute;inset:0;background:rgba(24,24,27,0.5);"></div>
 

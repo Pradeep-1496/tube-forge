@@ -6,14 +6,7 @@ import {
 import { Background } from 'src/common/models/background.model';
 import { BackgroundType } from 'src/common/enums/bg-type.enum';
 import { join } from 'path';
-import {
-  existsSync,
-  mkdirSync,
-  unlinkSync,
-  statSync,
-  writeFileSync,
-  copyFileSync,
-} from 'fs';
+import { existsSync, mkdirSync, unlinkSync, statSync, writeFileSync } from 'fs';
 import sharp from 'sharp';
 
 @Injectable()
@@ -76,8 +69,6 @@ export class BackgroundManagementService {
     return Background.create({
       name,
       path: join(
-        'assets',
-        'backgrounds',
         imageType === BackgroundType.LANDSCAPE ? 'landscape' : 'protrait',
         finalName,
       ),
@@ -104,12 +95,7 @@ export class BackgroundManagementService {
       throw new NotFoundException(`Background with ID ${id} not found`);
     }
 
-    const fullPath = join(
-      process.cwd(),
-      'assets',
-      'backgrounds',
-      background.path,
-    );
+    const fullPath = join(process.cwd(), background.path);
     if (existsSync(fullPath)) {
       unlinkSync(fullPath);
     }

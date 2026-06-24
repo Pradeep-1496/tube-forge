@@ -19,7 +19,7 @@ export function NeonCard(
 <head><style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@900&display=swap');
 </style></head>
-<body style="margin:0;width:1080px;height:1920px;background:#050505;${bgCss}display:flex;justify-content:center;align-items:center;font-family:Inter,sans-serif;position:relative;overflow:hidden;">
+<body style="margin:0;width:1080px;height:1920px;background-color:#050505;${bgCss}display:flex;justify-content:center;align-items:center;font-family:Inter,sans-serif;position:relative;overflow:hidden;">
 
 <div style="position:absolute;inset:0;background:rgba(5,5,5,0.6);"></div>
 

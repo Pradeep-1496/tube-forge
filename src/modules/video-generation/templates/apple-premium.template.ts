@@ -19,7 +19,7 @@ export function ApplePremium(
 <head><style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;800&display=swap');
 </style></head>
-<body style="margin:0;width:1080px;height:1920px;background:#000;${bgCss}display:flex;justify-content:center;align-items:center;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display',sans-serif;position:relative;overflow:hidden;">
+<body style="margin:0;width:1080px;height:1920px;background-color:#000;${bgCss}display:flex;justify-content:center;align-items:center;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display',sans-serif;position:relative;overflow:hidden;">
 
 <div style="position:absolute;inset:0;background:rgba(0,0,0,0.5);"></div>
 

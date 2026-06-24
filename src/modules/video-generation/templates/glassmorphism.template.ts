@@ -19,7 +19,7 @@ export function Glassmorphism(
 <head><style>
   @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap');
 </style></head>
-<body style="margin:0;width:1080px;height:1920px;background:#111827;${bgCss}display:flex;justify-content:center;align-items:center;font-family:Poppins,sans-serif;overflow:hidden;position:relative;">
+<body style="margin:0;width:1080px;height:1920px;background-color:#111827;${bgCss}display:flex;justify-content:center;align-items:center;font-family:Poppins,sans-serif;overflow:hidden;position:relative;">
 
 <div style="position:absolute;inset:0;background:rgba(17,24,39,0.55);"></div>
 

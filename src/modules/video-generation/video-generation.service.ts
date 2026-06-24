@@ -1,10 +1,20 @@
 ﻿import { Injectable, NotFoundException } from '@nestjs/common';
 import { Metadata } from '../../common/models/metadata.model';
+import { Background } from '../../common/models/background.model';
 import { join } from 'path';
-import { existsSync, mkdirSync, copyFileSync, unlinkSync } from 'fs';
+import {
+  existsSync,
+  mkdirSync,
+  copyFileSync,
+  unlinkSync,
+  readFileSync,
+} from 'fs';
 import { HtmlToImageService } from './services/html-to-image.service';
 import { ImageToVideoService } from './services/image-to-video.service';
-import { BackgroundImageProvider } from './services/background-image.provider';
+import {
+  BackgroundImageProvider,
+  BackgroundImageConfig,
+} from './services/background-image.provider';
 import { GenerateVideoDto } from './dto/generate-video.dto';
 
 @Injectable()
@@ -46,10 +56,7 @@ export class VideoGenerationService {
 
     const framePath = join(outputDir, `frame-${Date.now()}.png`);
 
-    const bgConfig = this.backgroundProvider.buildConfig(
-      dto?.backgroundImage,
-      0.45,
-    );
+    const bgConfig = await this.buildBackgroundConfig(dto?.backgroundId);
     const html = this.htmlToImageService.buildVideoHtml(
       title,
       content,
@@ -74,6 +81,41 @@ export class VideoGenerationService {
     unlinkSync(framePath);
 
     return outputPath;
+  }
+
+  private async buildBackgroundConfig(
+    backgroundId?: string,
+  ): Promise<BackgroundImageConfig> {
+    if (!backgroundId) {
+      return { enabled: false, opacity: 0.45 };
+    }
+
+    const background = await Background.findByPk(backgroundId, { raw: true });
+    if (!background) {
+      throw new NotFoundException(
+        `Background with ID ${backgroundId} not found`,
+      );
+    }
+
+    const fullPath = join(process.cwd(), background.path);
+    if (!existsSync(fullPath)) {
+      return { enabled: false, opacity: 0.45 };
+    }
+
+    try {
+      const buf = readFileSync(fullPath);
+      const b64 = buf.toString('base64');
+      const ext = background.path.split('.').pop()?.toLowerCase() || 'jpg';
+      const mimeType = ext === 'png' ? 'image/png' : 'image/jpeg';
+      return {
+        enabled: true,
+        path: background.path,
+        dataUrl: `data:${mimeType};base64,${b64}`,
+        opacity: 0.45,
+      };
+    } catch {
+      return { enabled: false, opacity: 0.45 };
+    }
   }
 
   getAvailableBackgrounds(): string[] {
