@@ -3,6 +3,7 @@ import { VideoGenerationService } from './video-generation.service';
 import { VideoGenerationController } from './video-generation.controller';
 import { HtmlToImageService } from './services/html-to-image.service';
 import { ImageToVideoService } from './services/image-to-video.service';
+import { AudioService } from './services/audio.service';
 import { BackgroundImageProvider } from './services/background-image.provider';
 
 @Module({
@@ -11,6 +12,7 @@ import { BackgroundImageProvider } from './services/background-image.provider';
     VideoGenerationService,
     HtmlToImageService,
     ImageToVideoService,
+    AudioService,
     BackgroundImageProvider,
   ],
 })

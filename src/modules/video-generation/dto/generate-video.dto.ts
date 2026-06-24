@@ -1,4 +1,4 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsString, IsOptional } from 'class-validator';
 
 export class GenerateVideoDto {
@@ -18,4 +18,13 @@ export class GenerateVideoDto {
   @IsOptional()
   @IsString()
   theme?: string;
+
+  @ApiPropertyOptional({
+    description:
+      'Absolute path to an audio file (mp3/wav). If shorter than 15s it will be looped, if longer it will be trimmed to 15s',
+    example: 'D:\\Nestjs\\tube-forge\\assets\\audios\\hip-hop-v-4.mp3',
+  })
+  @IsOptional()
+  @IsString()
+  audioPath?: string;
 }

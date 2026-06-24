@@ -11,6 +11,7 @@ import {
 } from 'fs';
 import { HtmlToImageService } from './services/html-to-image.service';
 import { ImageToVideoService } from './services/image-to-video.service';
+import { AudioService } from './services/audio.service';
 import {
   BackgroundImageProvider,
   BackgroundImageConfig,
@@ -22,6 +23,7 @@ export class VideoGenerationService {
   constructor(
     private readonly htmlToImageService: HtmlToImageService,
     private readonly imageToVideoService: ImageToVideoService,
+    private readonly audioService: AudioService,
     private readonly backgroundProvider: BackgroundImageProvider,
   ) {}
 
@@ -76,7 +78,18 @@ export class VideoGenerationService {
 
     copyFileSync(framePath, thumbnailPath);
 
-    await this.imageToVideoService.stitch(framePath, 15, outputPath);
+    let preparedAudioPath: string | null = null;
+    try {
+      preparedAudioPath = await this.audioService.prepareAudio(dto?.audioPath);
+      await this.imageToVideoService.stitch(
+        framePath,
+        15,
+        outputPath,
+        preparedAudioPath ?? undefined,
+      );
+    } finally {
+      this.audioService.cleanupTemp(preparedAudioPath);
+    }
 
     unlinkSync(framePath);
 

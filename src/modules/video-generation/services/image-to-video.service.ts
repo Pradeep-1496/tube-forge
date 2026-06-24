@@ -9,6 +9,7 @@ export class ImageToVideoService {
     imagePath: string,
     durationSeconds: number,
     outputPath: string,
+    audioPath?: string,
   ): Promise<void> {
     const outputDir = join(outputPath, '..');
     if (!existsSync(outputDir)) {
@@ -16,11 +17,15 @@ export class ImageToVideoService {
     }
 
     return new Promise((resolve, reject) => {
-      const args: string[] = [
-        '-loop',
-        '1',
-        '-i',
-        imagePath,
+      const args: string[] = [];
+
+      if (audioPath) {
+        args.push('-loop', '1', '-i', imagePath, '-i', audioPath);
+      } else {
+        args.push('-loop', '1', '-i', imagePath);
+      }
+
+      args.push(
         '-c:v',
         'libx264',
         '-pix_fmt',
@@ -31,7 +36,11 @@ export class ImageToVideoService {
         String(durationSeconds),
         '-y',
         outputPath,
-      ];
+      );
+
+      if (audioPath) {
+        args.push('-c:a', 'aac', '-shortest');
+      }
 
       const ffmpeg = spawn('ffmpeg', args);
 
