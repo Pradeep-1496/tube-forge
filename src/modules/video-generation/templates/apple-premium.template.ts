@@ -15,33 +15,95 @@ export function ApplePremium(
 ) {
   const bgCss = bgStyle(bg);
   return `
-<html>
-<head><style>
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;800&display=swap');
-</style></head>
-<body style="margin:0;width:1080px;height:1920px;background-color:#000;${bgCss}display:flex;justify-content:center;align-items:center;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display',sans-serif;position:relative;overflow:hidden;">
-
-<div style="position:absolute;inset:0;background:rgba(0,0,0,0.5);"></div>
-
-<div style="width:88%;padding:80px 60px;background:rgba(255,255,255,0.08);backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);border:1px solid rgba(255,255,255,0.12);border-radius:48px;text-align:center;position:relative;z-index:1;">
-
-<div style="font-size:${isFirstFrame ? '100px' : '80px'};font-weight:800;line-height:1.1;color:white;letter-spacing:-3px;margin-bottom:40px;text-shadow:0 4px 20px rgba(0,0,0,0.5);">
-${title}
-</div>
-
-${
-  content
-    ? `
-<div style="font-size:58px;font-weight:500;line-height:1.55;color:rgba(255,255,255,0.9);text-shadow:0 2px 10px rgba(0,0,0,0.5);">
-${content}
-</div>
-`
-    : ''
-}
-
-</div>
-
-</body>
-</html>
+     <html>
+      <head>
+        <style>
+          @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+          
+          * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+          }
+          
+          body {
+            width: 1080px;
+            height: 1920px;
+            ${bgCss}
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Roboto', sans-serif;
+            position: relative;
+            overflow: hidden;
+            padding: 0;
+          }
+          
+          body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 1;
+          }
+          
+          .container {
+            position: relative;
+            width: 90%;
+            height: 85%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            z-index: 5;
+            overflow-y: auto;
+            padding: 40px;
+          }
+          
+          h1 {
+            color: white;
+            font-size: 72px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 50px;
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.9);
+            line-height: 1.2;
+          }
+          
+          p {
+            color: rgba(255, 255, 255, 0.95);
+            font-size: 48px;
+            font-weight: 500;
+            line-height: 1.8;
+            margin-bottom: 25px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.9);
+            word-wrap: break-word;
+            max-width: 100%;
+          }
+          
+          strong {
+            color: #ffd700;
+            font-weight: 700;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+            <h1>Job Interview</h1>
+<p><strong>Interviewer:</strong> What is your biggest strength?</p>
+<p><strong>Candidate:</strong> I learn fast.</p>
+<p><strong>Interviewer:</strong> Weakness?</p>
+<p><strong>Candidate:</strong> I forget faster.</p>
+<p><strong>Interviewer:</strong> What is your biggest strength?</p>
+<p><strong>Candidate:</strong> I learn fast.</p>
+<p><strong>Interviewer:</strong> Weakness?</p>
+<p><strong>Candidate:</strong> I forget faster.</p>
+          </div>
+        
+      </body>
+      </html>
     `;
 }

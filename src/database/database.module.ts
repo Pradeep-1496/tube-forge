@@ -3,6 +3,7 @@ import { SequelizeModule } from '@nestjs/sequelize';
 import 'dotenv/config';
 import { Metadata } from 'src/common/models/metadata.model';
 import { Background } from 'src/common/models/background.model';
+import { Audio } from 'src/common/models/audio.model';
 
 @Module({
   imports: [
@@ -15,7 +16,7 @@ import { Background } from 'src/common/models/background.model';
       password: process.env.DB_PASSWORD,
       autoLoadModels: true,
       synchronize: true,
-      models: [Metadata, Background],
+      models: [Metadata, Background, Audio],
     }),
   ],
 })
