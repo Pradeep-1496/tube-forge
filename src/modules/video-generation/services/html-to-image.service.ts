@@ -49,7 +49,17 @@ export class HtmlToImageService {
     content: string,
     isFirstFrame: boolean = false,
     bgConfig?: BackgroundImageConfig,
+    themeName?: string,
   ): string {
-    return Glassmorphism(title, content, isFirstFrame, bgConfig);
+    const key = themeName?.toLowerCase().trim();
+    const map = {
+      glassmorphism: Glassmorphism,
+      neon: NeonCard,
+      viral: ViralShorts,
+      apple: ApplePremium,
+      gold: LuxuryGold,
+    };
+    const fn = map[key as keyof typeof map] || Glassmorphism;
+    return fn(title, content, isFirstFrame, bgConfig);
   }
 }

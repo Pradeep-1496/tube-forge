@@ -44,6 +44,10 @@ export class BackgroundImageProvider implements OnModuleInit {
     return this.cachedDataUrls.get(filename);
   }
 
+  getAvailableFilenames(): string[] {
+    return Array.from(this.cachedDataUrls.keys());
+  }
+
   buildConfig(
     filename?: string,
     opacity: number = 0.45,

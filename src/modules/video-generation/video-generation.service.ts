@@ -5,6 +5,7 @@ import { existsSync, mkdirSync, copyFileSync, unlinkSync } from 'fs';
 import { HtmlToImageService } from './services/html-to-image.service';
 import { ImageToVideoService } from './services/image-to-video.service';
 import { BackgroundImageProvider } from './services/background-image.provider';
+import { GenerateVideoDto } from './dto/generate-video.dto';
 
 @Injectable()
 export class VideoGenerationService {
@@ -14,7 +15,7 @@ export class VideoGenerationService {
     private readonly backgroundProvider: BackgroundImageProvider,
   ) {}
 
-  async generateVideo(id: string): Promise<string> {
+  async generateVideo(id: string, dto?: GenerateVideoDto): Promise<string> {
     const metadata = await Metadata.findByPk(id, { raw: true });
     if (!metadata) {
       throw new NotFoundException(`Metadata with ID ${id} not found`);
@@ -33,12 +34,16 @@ export class VideoGenerationService {
 
     const framePath = join(outputDir, `frame-${Date.now()}.png`);
 
-    const bgConfig = this.backgroundProvider.buildConfig('1.jpg', 0.45);
+    const bgConfig = this.backgroundProvider.buildConfig(
+      dto?.backgroundImage,
+      0.45,
+    );
     const html = this.htmlToImageService.buildVideoHtml(
       title,
       content,
       true,
       bgConfig,
+      dto?.theme,
     );
     await this.htmlToImageService.render(html, framePath, bgConfig);
 
@@ -57,5 +62,13 @@ export class VideoGenerationService {
     unlinkSync(framePath);
 
     return outputPath;
+  }
+
+  getAvailableBackgrounds(): string[] {
+    return this.backgroundProvider.getAvailableFilenames();
+  }
+
+  getAvailableThemes(): string[] {
+    return ['glassmorphism', 'neon', 'viral', 'apple', 'gold'];
   }
 }
