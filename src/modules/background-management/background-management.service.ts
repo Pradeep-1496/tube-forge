@@ -69,6 +69,8 @@ export class BackgroundManagementService {
     return Background.create({
       name,
       path: join(
+        'assets',
+        'backgrounds',
         imageType === BackgroundType.LANDSCAPE ? 'landscape' : 'protrait',
         finalName,
       ),
