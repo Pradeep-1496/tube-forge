@@ -92,15 +92,11 @@ export function ApplePremium(
       </head>
       <body>
         <div class="container">
-            <h1>Job Interview</h1>
-<p><strong>Interviewer:</strong> What is your biggest strength?</p>
-<p><strong>Candidate:</strong> I learn fast.</p>
-<p><strong>Interviewer:</strong> Weakness?</p>
-<p><strong>Candidate:</strong> I forget faster.</p>
-<p><strong>Interviewer:</strong> What is your biggest strength?</p>
-<p><strong>Candidate:</strong> I learn fast.</p>
-<p><strong>Interviewer:</strong> Weakness?</p>
-<p><strong>Candidate:</strong> I forget faster.</p>
+            <h1>${title}</h1>
+<div>
+${content}
+</div>
+
           </div>
         
       </body>

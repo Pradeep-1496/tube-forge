@@ -1,6 +1,7 @@
 ﻿import { Injectable, NotFoundException } from '@nestjs/common';
 import { Metadata } from '../../common/models/metadata.model';
 import { Background } from '../../common/models/background.model';
+import { Audio } from '../../common/models/audio.model';
 import { join } from 'path';
 import {
   existsSync,
@@ -80,7 +81,8 @@ export class VideoGenerationService {
 
     let preparedAudioPath: string | null = null;
     try {
-      preparedAudioPath = await this.audioService.prepareAudio(dto?.audioPath);
+      const audioFilePath = await this.resolveAudioFilePath(dto?.audioId);
+      preparedAudioPath = await this.audioService.prepareAudio(audioFilePath);
       await this.imageToVideoService.stitch(
         framePath,
         15,
@@ -94,6 +96,21 @@ export class VideoGenerationService {
     unlinkSync(framePath);
 
     return outputPath;
+  }
+
+  private async resolveAudioFilePath(
+    audioId: string | undefined,
+  ): Promise<string | null> {
+    if (!audioId) {
+      return null;
+    }
+
+    const audio = await Audio.findByPk(audioId, { raw: true });
+    if (!audio) {
+      return null;
+    }
+
+    return join(process.cwd(), audio.path);
   }
 
   private async buildBackgroundConfig(

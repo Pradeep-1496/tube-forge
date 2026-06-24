@@ -21,10 +21,10 @@ export class GenerateVideoDto {
 
   @ApiPropertyOptional({
     description:
-      'Audio filename from the assets/audios folder (e.g. hip-hop-v-4.mp3). If shorter than 15s it will be looped, if longer it will be trimmed to 15s',
-    example: 'hip-hop-v-4.mp3',
+      'Audio ID from the audios collection. If the audio is shorter than 15s it will be looped, if longer it will be trimmed to 15s',
+    example: 'a1b2c3d4-1234-1234-1234-abcdef123456',
   })
   @IsOptional()
   @IsString()
-  audioPath?: string;
+  audioId?: string;
 }
