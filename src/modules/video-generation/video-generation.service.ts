@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+﻿import { Injectable, NotFoundException } from '@nestjs/common';
 import { Metadata } from '../../common/models/metadata.model';
 import { join } from 'path';
 import { existsSync, mkdirSync, copyFileSync, unlinkSync } from 'fs';
@@ -36,15 +36,15 @@ export class VideoGenerationService {
 
     const now = new Date();
     const datePart = now.toISOString().slice(0, 10);
-    const timePart = now.toISOString().slice(11, 19).replace(/:/g, '-');
-    const filename = `${datePart}-${timePart}.mp4`;
-    const thumbnailFilename = `${datePart}-${timePart}.png`;
+
+    const filename = `${datePart}-${Date.now()}.mp4`;
+    const thumbnailFilename = `${datePart}-${Date.now()}.png`;
     const outputPath = join(outputDir, filename);
     const thumbnailPath = join(thumbnailDir, thumbnailFilename);
 
     copyFileSync(framePath, thumbnailPath);
 
-    await this.imageToVideoService.stitch([framePath], 15, outputPath);
+    await this.imageToVideoService.stitch(framePath, 15, outputPath);
 
     unlinkSync(framePath);
 
