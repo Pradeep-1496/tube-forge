@@ -118,10 +118,6 @@ export class VideoGenerationService {
     }
   }
 
-  getAvailableBackgrounds(): string[] {
-    return this.backgroundProvider.getAvailableFilenames();
-  }
-
   getAvailableThemes(): string[] {
     return ['glassmorphism', 'neon', 'viral', 'apple', 'gold'];
   }

@@ -38,12 +38,6 @@ export class VideoGenerationController {
     return this.videoGenerationService.generateVideo(id, dto);
   }
 
-  @Get('backgrounds')
-  @ApiOperation({ summary: 'Get all available background image filenames' })
-  getBackgrounds() {
-    return this.videoGenerationService.getAvailableBackgrounds();
-  }
-
   @Get('themes')
   @ApiOperation({ summary: 'Get all available theme names' })
   getThemes() {
