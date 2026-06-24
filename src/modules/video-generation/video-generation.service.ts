@@ -4,12 +4,14 @@ import { join } from 'path';
 import { existsSync, mkdirSync, copyFileSync, unlinkSync } from 'fs';
 import { HtmlToImageService } from './services/html-to-image.service';
 import { ImageToVideoService } from './services/image-to-video.service';
+import { BackgroundImageProvider } from './services/background-image.provider';
 
 @Injectable()
 export class VideoGenerationService {
   constructor(
     private readonly htmlToImageService: HtmlToImageService,
     private readonly imageToVideoService: ImageToVideoService,
+    private readonly backgroundProvider: BackgroundImageProvider,
   ) {}
 
   async generateVideo(id: string): Promise<string> {
@@ -31,14 +33,20 @@ export class VideoGenerationService {
 
     const framePath = join(outputDir, `frame-${Date.now()}.png`);
 
-    const html = this.htmlToImageService.buildVideoHtml(title, content, true);
-    await this.htmlToImageService.render(html, framePath);
+    const bgConfig = this.backgroundProvider.buildConfig('1.jpg', 0.45);
+    const html = this.htmlToImageService.buildVideoHtml(
+      title,
+      content,
+      true,
+      bgConfig,
+    );
+    await this.htmlToImageService.render(html, framePath, bgConfig);
 
     const now = new Date();
     const datePart = now.toISOString().slice(0, 10);
-
-    const filename = `${datePart}-${Date.now()}.mp4`;
-    const thumbnailFilename = `${datePart}-${Date.now()}.png`;
+    const timePart = Date.now();
+    const filename = `${datePart}-${timePart}.mp4`;
+    const thumbnailFilename = `${datePart}-${timePart}.png`;
     const outputPath = join(outputDir, filename);
     const thumbnailPath = join(thumbnailDir, thumbnailFilename);
 

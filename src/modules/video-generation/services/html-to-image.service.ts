@@ -1,12 +1,28 @@
-import { Injectable } from '@nestjs/common';
+﻿import { Injectable, Inject } from '@nestjs/common';
 import puppeteer from 'puppeteer';
 import { join } from 'path';
 import { existsSync, mkdirSync } from 'fs';
-import { ApplePremium } from '../templates/index';
+import {
+  BackgroundImageProvider,
+  BackgroundImageConfig,
+} from './background-image.provider';
+import {
+  ApplePremium,
+  ViralShorts,
+  Glassmorphism,
+  LuxuryGold,
+  NeonCard,
+} from '../templates/index';
 
 @Injectable()
 export class HtmlToImageService {
-  async render(html: string, outputPath: string): Promise<void> {
+  constructor(private readonly backgroundProvider: BackgroundImageProvider) {}
+
+  async render(
+    html: string,
+    outputPath: string,
+    bgConfig?: BackgroundImageConfig,
+  ): Promise<void> {
     const dir = join(outputPath, '..');
     if (!existsSync(dir)) {
       mkdirSync(dir, { recursive: true });
@@ -18,18 +34,22 @@ export class HtmlToImageService {
       headless: true,
       args: ['--no-sandbox', '--disable-dev-shm-usage'],
     });
-    const page = await browser.newPage();
-    await page.setViewport({ width: 1080, height: 1920 });
-    await page.setContent(html);
-    await page.screenshot({ path: outputPath, type: 'png' });
-    await browser.close();
+    try {
+      const page = await browser.newPage();
+      await page.setViewport({ width: 1080, height: 1920 });
+      await page.setContent(html);
+      await page.screenshot({ path: outputPath, type: 'png' });
+    } finally {
+      await browser.close();
+    }
   }
 
   buildVideoHtml(
     title: string,
     content: string,
     isFirstFrame: boolean = false,
+    bgConfig?: BackgroundImageConfig,
   ): string {
-    return ApplePremium(title, content, (isFirstFrame = false));
+    return Glassmorphism(title, content, isFirstFrame, bgConfig);
   }
 }
