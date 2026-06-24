@@ -15,6 +15,18 @@ export class VideoGenerationService {
     private readonly backgroundProvider: BackgroundImageProvider,
   ) {}
 
+  async findAll(): Promise<Metadata[]> {
+    return Metadata.findAll();
+  }
+
+  async findOne(id: string): Promise<Metadata> {
+    const metadata = await Metadata.findByPk(id, { raw: true });
+    if (!metadata) {
+      throw new NotFoundException(`Metadata with ID ${id} not found`);
+    }
+    return metadata;
+  }
+
   async generateVideo(id: string, dto?: GenerateVideoDto): Promise<string> {
     const metadata = await Metadata.findByPk(id, { raw: true });
     if (!metadata) {
