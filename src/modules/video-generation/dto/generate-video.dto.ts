@@ -21,8 +21,8 @@ export class GenerateVideoDto {
 
   @ApiPropertyOptional({
     description:
-      'Absolute path to an audio file (mp3/wav). If shorter than 15s it will be looped, if longer it will be trimmed to 15s',
-    example: 'D:\\Nestjs\\tube-forge\\assets\\audios\\hip-hop-v-4.mp3',
+      'Audio filename from the assets/audios folder (e.g. hip-hop-v-4.mp3). If shorter than 15s it will be looped, if longer it will be trimmed to 15s',
+    example: 'hip-hop-v-4.mp3',
   })
   @IsOptional()
   @IsString()

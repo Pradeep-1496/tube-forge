@@ -6,23 +6,31 @@ import { existsSync, mkdirSync, unlinkSync } from 'fs';
 @Injectable()
 export class AudioService {
   private readonly outputDir: string;
+  private readonly assetsAudioDir: string;
 
   constructor() {
     this.outputDir = join(process.cwd(), 'tmp-audio');
+    this.assetsAudioDir = join(process.cwd(), 'assets', 'audios');
     if (!existsSync(this.outputDir)) {
       mkdirSync(this.outputDir, { recursive: true });
     }
   }
 
   async prepareAudio(
-    audioPath: string | undefined,
+    audioFilename: string | undefined,
     targetDuration: number = 15,
   ): Promise<string | null> {
-    if (!audioPath || !existsSync(audioPath)) {
+    if (!audioFilename) {
       return null;
     }
 
-    const duration = await this.getAudioDuration(audioPath);
+    const resolvedPath = join(this.assetsAudioDir, audioFilename);
+
+    if (!existsSync(resolvedPath)) {
+      return null;
+    }
+
+    const duration = await this.getAudioDuration(resolvedPath);
 
     if (duration === null) {
       return null;
@@ -34,9 +42,9 @@ export class AudioService {
     );
 
     if (duration <= targetDuration) {
-      await this.loopAudio(audioPath, targetDuration, outputPath);
+      await this.loopAudio(resolvedPath, targetDuration, outputPath);
     } else {
-      await this.trimAudio(audioPath, targetDuration, outputPath);
+      await this.trimAudio(resolvedPath, targetDuration, outputPath);
     }
 
     return outputPath;
