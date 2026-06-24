@@ -59,6 +59,7 @@ export class HtmlToImageService {
       apple: ApplePremium,
       gold: LuxuryGold,
     };
+
     const fn = map[key as keyof typeof map] || Glassmorphism;
     return fn(title, content, isFirstFrame, bgConfig);
   }

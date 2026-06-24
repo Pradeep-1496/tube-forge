@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
 import 'dotenv/config';
 import { Metadata } from 'src/common/models/metadata.model';
+import { Background } from 'src/common/models/background.model';
 
 @Module({
   imports: [
@@ -14,7 +15,7 @@ import { Metadata } from 'src/common/models/metadata.model';
       password: process.env.DB_PASSWORD,
       autoLoadModels: true,
       synchronize: true,
-      models: [Metadata],
+      models: [Metadata, Background],
     }),
   ],
 })

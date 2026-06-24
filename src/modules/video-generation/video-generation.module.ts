@@ -7,6 +7,11 @@ import { BackgroundImageProvider } from './services/background-image.provider';
 
 @Module({
   controllers: [VideoGenerationController],
-  providers: [VideoGenerationService, HtmlToImageService, ImageToVideoService, BackgroundImageProvider],
+  providers: [
+    VideoGenerationService,
+    HtmlToImageService,
+    ImageToVideoService,
+    BackgroundImageProvider,
+  ],
 })
 export class VideoGenerationModule {}

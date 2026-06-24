@@ -19,6 +19,9 @@ export class Background extends Model {
 
   @Column({ type: DataType.STRING })
   path!: string;
+
+  @Column({ type: DataType.INTEGER })
+  size!: number;
   @Column({
     type: DataType.STRING,
     values: ['portrait', 'landscape'],

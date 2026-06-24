@@ -3,7 +3,8 @@ import { IsString, IsOptional } from 'class-validator';
 
 export class GenerateVideoDto {
   @ApiPropertyOptional({
-    description: 'Background image filename (e.g. 1.jpg, 2.jpg, 3.jpg, 4.jpg, 5.jpg)',
+    description:
+      'Background image filename (e.g. 1.jpg, 2.jpg, 3.jpg, 4.jpg, 5.jpg)',
     example: '2.jpg',
   })
   @IsOptional()

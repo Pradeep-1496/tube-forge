@@ -5,7 +5,11 @@ import { existsSync, mkdirSync } from 'fs';
 
 @Injectable()
 export class ImageToVideoService {
-  async stitch(imagePath: string, durationSeconds: number, outputPath: string): Promise<void> {
+  async stitch(
+    imagePath: string,
+    durationSeconds: number,
+    outputPath: string,
+  ): Promise<void> {
     const outputDir = join(outputPath, '..');
     if (!existsSync(outputDir)) {
       mkdirSync(outputDir, { recursive: true });
@@ -13,11 +17,20 @@ export class ImageToVideoService {
 
     return new Promise((resolve, reject) => {
       const args: string[] = [
-        '-loop', '1', '-i', imagePath,
-        '-c:v', 'libx264', '-pix_fmt', 'yuv420p',
-        '-vf', 'scale=1080:1920,fps=30',
-        '-t', String(durationSeconds),
-        '-y', outputPath,
+        '-loop',
+        '1',
+        '-i',
+        imagePath,
+        '-c:v',
+        'libx264',
+        '-pix_fmt',
+        'yuv420p',
+        '-vf',
+        'scale=1080:1920,fps=30',
+        '-t',
+        String(durationSeconds),
+        '-y',
+        outputPath,
       ];
 
       const ffmpeg = spawn('ffmpeg', args);
