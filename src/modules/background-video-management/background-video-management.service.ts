@@ -7,6 +7,7 @@ import { BackgroundVideo } from 'src/common/models/background-video.model';
 import { BackgroundVideoType } from 'src/common/enums/background-video-type.enum';
 import { join } from 'path';
 import { existsSync, mkdirSync, unlinkSync, statSync, writeFileSync } from 'fs';
+import { spawn } from 'child_process';
 
 @Injectable()
 export class BackgroundVideoManagementService {
@@ -53,8 +54,17 @@ export class BackgroundVideoManagementService {
       `${sanitizedName}.${ext}`,
     );
     const targetPath = join(targetDir, finalName);
+    const tempPath = join(targetDir, `temp-${Date.now()}-${finalName}`);
 
-    writeFileSync(targetPath, file.buffer);
+    writeFileSync(tempPath, file.buffer);
+
+    try {
+      await this.transcodeToPortrait(tempPath, targetPath);
+    } finally {
+      if (existsSync(tempPath)) {
+        unlinkSync(tempPath);
+      }
+    }
 
     const fileStat = statSync(targetPath);
     const sizeInBytes = fileStat.size;
@@ -69,6 +79,41 @@ export class BackgroundVideoManagementService {
       ),
       size: sizeInBytes,
       type: videoType,
+    });
+  }
+
+  private async transcodeToPortrait(
+    inputPath: string,
+    outputPath: string,
+  ): Promise<void> {
+    await new Promise<void>((resolve, reject) => {
+      const args = [
+        '-i',
+        inputPath,
+        '-vf',
+        'scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2:black',
+        '-c:a',
+        'aac',
+        '-y',
+        outputPath,
+      ];
+
+      const ffmpeg = spawn('ffmpeg', args);
+
+      let stderr = '';
+      ffmpeg.stderr.on('data', (data) => {
+        stderr += String(data);
+      });
+
+      ffmpeg.on('close', (code) => {
+        if (code !== 0) {
+          reject(new Error(`FFmpeg transcoding failed: ${stderr}`));
+          return;
+        }
+        resolve();
+      });
+
+      ffmpeg.on('error', (err) => reject(err));
     });
   }
 
