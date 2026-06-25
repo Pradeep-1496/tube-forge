@@ -1,7 +1,7 @@
 import { Table, Column, Model, DataType } from 'sequelize-typescript';
 
 @Table({
-  tableName: 'metadata',
+  tableName: 'content',
   timestamps: true,
   underscored: true,
 })

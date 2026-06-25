@@ -28,7 +28,7 @@ export function ViralShorts(
 ${
   content
     ? `
-<div style="display:inline-block;padding:30px 50px;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:white;border-radius:25px;font-size:${isFirstFrame ? '85px' : '72px'};font-weight:900;line-height:1.2;margin-bottom:40px;box-shadow:0 10px 40px rgba(99,102,241,0.4);">
+<div style="display:inline-block;padding:30px 50px;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:white;border-radius:25px;font-size:${isFirstFrame ? '85px' : '72px'};font-weight:900;line-height:1.2;margin-bottom:40px;box-shadow:0 10px 40px rgba(99, 101, 241, 0.12);">
 ${title}
 </div>
 
@@ -37,7 +37,7 @@ ${content}
 </div>
 `
     : `
-<div style="display:inline-block;padding:40px 60px;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:white;border-radius:30px;font-size:${isFirstFrame ? '85px' : '72px'};font-weight:900;line-height:1.2;box-shadow:0 10px 40px rgba(99,102,241,0.4);">
+<div style="display:inline-block;padding:20px 30px;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:white;border-radius:30px;font-size:${isFirstFrame ? '85px' : '72px'};font-weight:900;line-height:1.2;box-shadow:0 10px 40px rgba(99,102,241,0.4);">
 ${title}
 </div>
 `
