@@ -1,0 +1,124 @@
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
+import { BackgroundVideo } from 'src/common/models/background-video.model';
+import { BackgroundVideoType } from 'src/common/enums/background-video-type.enum';
+import { join } from 'path';
+import { existsSync, mkdirSync, unlinkSync, statSync, writeFileSync } from 'fs';
+
+@Injectable()
+export class BackgroundVideoManagementService {
+  private readonly PORTRAIT_DIR = join(
+    process.cwd(),
+    'assets',
+    'bg_videos',
+    'portrait',
+  );
+  private readonly LANDSCAPE_DIR = join(
+    process.cwd(),
+    'assets',
+    'bg_videos',
+    'landscape',
+  );
+
+  async create(
+    file: Express.Multer.File,
+    name: string,
+    type?: 'portrait' | 'landscape',
+  ): Promise<BackgroundVideo> {
+    if (!file) {
+      throw new BadRequestException('Video file is required');
+    }
+
+    const ext = this.getExtension(file.originalname);
+    const sanitizedName = this.sanitizeFilename(name);
+
+    let videoType: BackgroundVideoType = type as BackgroundVideoType;
+    if (!type) {
+      videoType = BackgroundVideoType.PORTRAIT;
+    }
+
+    const targetDir =
+      videoType === BackgroundVideoType.LANDSCAPE
+        ? this.LANDSCAPE_DIR
+        : this.PORTRAIT_DIR;
+    if (!existsSync(targetDir)) {
+      mkdirSync(targetDir, { recursive: true });
+    }
+
+    const finalName = this.getUniqueFilename(
+      targetDir,
+      `${sanitizedName}.${ext}`,
+    );
+    const targetPath = join(targetDir, finalName);
+
+    writeFileSync(targetPath, file.buffer);
+
+    const fileStat = statSync(targetPath);
+    const sizeInBytes = fileStat.size;
+
+    return BackgroundVideo.create({
+      name,
+      path: join(
+        'assets',
+        'bg_videos',
+        videoType === BackgroundVideoType.LANDSCAPE ? 'landscape' : 'portrait',
+        finalName,
+      ),
+      size: sizeInBytes,
+      type: videoType,
+    });
+  }
+
+  async findAll(): Promise<BackgroundVideo[]> {
+    return BackgroundVideo.findAll({ order: [['created_at', 'DESC']] });
+  }
+
+  async findOne(id: string): Promise<BackgroundVideo> {
+    const backgroundVideo = await BackgroundVideo.findByPk(id, { raw: true });
+    if (!backgroundVideo) {
+      throw new NotFoundException(`Background video with ID ${id} not found`);
+    }
+    return backgroundVideo;
+  }
+
+  async remove(id: string): Promise<void> {
+    const backgroundVideo = await BackgroundVideo.findByPk(id);
+    if (!backgroundVideo) {
+      throw new NotFoundException(`Background video with ID ${id} not found`);
+    }
+
+    const fullPath = join(process.cwd(), backgroundVideo.path);
+    if (existsSync(fullPath)) {
+      unlinkSync(fullPath);
+    }
+
+    await backgroundVideo.destroy();
+  }
+
+  private sanitizeFilename(name: string): string {
+    return name.replace(/[^a-zA-Z0-9_-]/g, '_').toLowerCase();
+  }
+
+  private getExtension(filename: string): string {
+    return filename.split('.').pop()?.toLowerCase() || 'mp4';
+  }
+
+  private getUniqueFilename(dir: string, desiredName: string): string {
+    const allDirs = [this.PORTRAIT_DIR, this.LANDSCAPE_DIR];
+    let candidate = desiredName;
+    let counter = 1;
+    const existsAnywhere = (name: string) =>
+      allDirs.some((d) => existsSync(join(d, name)));
+    while (existsAnywhere(candidate)) {
+      const parts = desiredName.split('.');
+      const ext = parts.pop();
+      const base = parts.join('.');
+      candidate = ext ? `${base}_${counter}.${ext}` : `${base}_${counter}`;
+      counter++;
+    }
+    return candidate;
+  }
+}

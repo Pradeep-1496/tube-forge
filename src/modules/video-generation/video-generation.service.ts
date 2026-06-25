@@ -1,6 +1,7 @@
 ﻿import { Injectable, NotFoundException } from '@nestjs/common';
 import { Metadata } from '../../common/models/metadata.model';
 import { Background } from '../../common/models/background.model';
+import { BackgroundVideo } from '../../common/models/background-video.model';
 import { Audio } from '../../common/models/audio.model';
 import { join } from 'path';
 import {
@@ -67,7 +68,7 @@ export class VideoGenerationService {
       bgConfig,
       dto?.theme,
     );
-    await this.htmlToImageService.render(html, framePath, bgConfig);
+    await this.htmlToImageService.render(html, framePath);
 
     const now = new Date();
     const datePart = now.toISOString().slice(0, 10);
@@ -94,6 +95,86 @@ export class VideoGenerationService {
     }
 
     unlinkSync(framePath);
+
+    return outputPath;
+  }
+
+  async generateVideoFromBackgroundVideo(
+    metadataId: string,
+    backgroundVideoId: string,
+    audioId?: string,
+    theme?: string,
+  ): Promise<string> {
+    const metadata = await Metadata.findByPk(metadataId, { raw: true });
+    if (!metadata) {
+      throw new NotFoundException(`Metadata with ID ${metadataId} not found`);
+    }
+
+    const { title, content } = metadata;
+
+    const backgroundVideo = await BackgroundVideo.findByPk(backgroundVideoId, {
+      raw: true,
+    });
+    if (!backgroundVideo) {
+      throw new NotFoundException(
+        `Background video with ID ${backgroundVideoId} not found`,
+      );
+    }
+
+    const backgroundVideoPath = join(process.cwd(), backgroundVideo.path);
+    if (!existsSync(backgroundVideoPath)) {
+      throw new NotFoundException(
+        `Background video file not found at ${backgroundVideo.path}`,
+      );
+    }
+
+    const outputDir = join(process.cwd(), 'output-videos');
+    const thumbnailDir = join(process.cwd(), 'thumbnail');
+    if (!existsSync(outputDir)) {
+      mkdirSync(outputDir, { recursive: true });
+    }
+    if (!existsSync(thumbnailDir)) {
+      mkdirSync(thumbnailDir, { recursive: true });
+    }
+
+    const overlayPath = join(outputDir, `overlay-${Date.now()}.png`);
+
+    const html = this.htmlToImageService.buildVideoHtml(
+      title,
+      content,
+      true,
+      undefined,
+      theme,
+    );
+    await this.htmlToImageService.renderTransparent(html, overlayPath);
+
+    const now = new Date();
+    const datePart = now.toISOString().slice(0, 10);
+    const timePart = Date.now();
+    const filename = `${datePart}-${timePart}.mp4`;
+    const thumbnailFilename = `${datePart}-${timePart}.png`;
+    const outputPath = join(outputDir, filename);
+    const thumbnailPath = join(thumbnailDir, thumbnailFilename);
+
+    copyFileSync(overlayPath, thumbnailPath);
+
+    let preparedAudioPath: string | null = null;
+    try {
+      const audioFilePath = await this.resolveAudioFilePath(audioId);
+      preparedAudioPath = await this.audioService.prepareAudio(audioFilePath);
+      await this.imageToVideoService.stitchWithOverlay(
+        backgroundVideoPath,
+        overlayPath,
+        15,
+        outputPath,
+        preparedAudioPath ?? undefined,
+      );
+    } finally {
+      this.audioService.cleanupTemp(preparedAudioPath);
+      if (existsSync(overlayPath)) {
+        unlinkSync(overlayPath);
+      }
+    }
 
     return outputPath;
   }

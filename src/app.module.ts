@@ -3,6 +3,7 @@ import { DatabaseModule } from './database/database.module';
 import { VideoGenerationModule } from './modules/video-generation/video-generation.module';
 import { BackgroundManagementModule } from './modules/background-management/background-management.module';
 import { AudioManagementModule } from './modules/audio-management/audio-management.module';
+import { BackgroundVideoManagementModule } from './modules/background-video-management/background-video-management.module';
 
 @Module({
   imports: [
@@ -10,6 +11,7 @@ import { AudioManagementModule } from './modules/audio-management/audio-manageme
     VideoGenerationModule,
     BackgroundManagementModule,
     AudioManagementModule,
+    BackgroundVideoManagementModule,
   ],
   controllers: [],
   providers: [],

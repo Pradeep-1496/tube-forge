@@ -1,0 +1,22 @@
+import { ApiPropertyOptional } from '@nestjs/swagger';
+import { IsString, IsOptional } from 'class-validator';
+
+export class GenerateFromVideoDto {
+  @ApiPropertyOptional({
+    description:
+      'Audio ID from the audios collection. If the audio is shorter than 15s it will be looped, if longer it will be trimmed to 15s',
+    example: 'a1b2c3d4-1234-1234-1234-abcdef123456',
+  })
+  @IsOptional()
+  @IsString()
+  audioId?: string;
+
+  @ApiPropertyOptional({
+    description: 'Theme key to use for the video template',
+    example: 'neutral',
+    enum: ['glassmorphism', 'neon', 'viral', 'apple', 'gold'],
+  })
+  @IsOptional()
+  @IsString()
+  theme?: string;
+}
