@@ -44,7 +44,10 @@ export class VideoGenerationService {
     return metadata;
   }
 
-  async generateVideo(id: string, dto?: GenerateVideoDto): Promise<string> {
+  async generateVideo(
+    id: string,
+    dto?: GenerateVideoDto,
+  ): Promise<{ outputPath: string; metadata: Metadata }> {
     const contentRecord = await VideoContent.findByPk(id, { raw: true });
     if (!contentRecord) {
       throw new NotFoundException(`VideoContent with ID ${id} not found`);
@@ -99,9 +102,13 @@ export class VideoGenerationService {
 
     unlinkSync(framePath);
 
-    await this.generateAndStoreMetadata(title, content, filename);
+    const storedMetadata = await this.generateAndStoreMetadata(
+      title,
+      content,
+      filename,
+    );
 
-    return outputPath;
+    return { outputPath, metadata: storedMetadata };
   }
 
   async generateVideoFromBackgroundVideo(
@@ -109,7 +116,7 @@ export class VideoGenerationService {
     backgroundVideoId: string,
     audioId?: string,
     theme?: string,
-  ): Promise<{ output: string; metaData: any }> {
+  ): Promise<{ outputPath: string; metadata: Metadata }> {
     const contentRecord = await VideoContent.findByPk(metadataId, {
       raw: true,
     });
@@ -185,42 +192,48 @@ export class VideoGenerationService {
       }
     }
 
-    const metadataInfo = await this.generateAndStoreMetadata(
+    const storedMetadata = await this.generateAndStoreMetadata(
       title,
       content,
       filename,
     );
 
-    return {
-      output: outputPath,
-      metaData: metadataInfo,
-    };
+    return { outputPath, metadata: storedMetadata };
   }
 
   private async generateAndStoreMetadata(
     title: string,
     content: string,
     filename: string,
-  ): Promise<void> {
+  ): Promise<Metadata> {
     try {
       const aiMetadata = await this.cerebrasService.generateMetadata(
         title,
         content,
       );
-      await Metadata.create({
+      return await Metadata.create({
         title: aiMetadata.title,
         description: aiMetadata.description,
         tags: aiMetadata.tags,
         file_name: filename,
         privacy_status: 'private',
         default_language: 'en',
-        self_declared_made_for_kids: false,
+        self_declared_made_for_kids: true,
       });
     } catch (error) {
       console.error(
         'Auto-metadata generation failed:',
         error instanceof Error ? error.message : error,
       );
+      return await Metadata.create({
+        title,
+        description: '',
+        tags: [],
+        file_name: filename,
+        privacy_status: 'private',
+        default_language: 'en',
+        self_declared_made_for_kids: true,
+      });
     }
   }
 
