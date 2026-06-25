@@ -19,4 +19,13 @@ export class GenerateFromVideoDto {
   @IsOptional()
   @IsString()
   theme?: string;
+
+  @ApiPropertyOptional({
+    description:
+      'Subscribe image ID from the subscribe-images collection. If provided, the video will be 10s main content + 5s subscribe image = 15s total',
+    example: 'ccddeeff-1234-1234-1234-abcdef123456',
+  })
+  @IsOptional()
+  @IsString()
+  subscribeImageId?: string;
 }

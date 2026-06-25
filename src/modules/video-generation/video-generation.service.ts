@@ -3,6 +3,7 @@ import { VideoContent } from '../../common/models/video-content.model';
 import { Background } from '../../common/models/background.model';
 import { BackgroundVideo } from '../../common/models/background-video.model';
 import { Audio } from '../../common/models/audio.model';
+import { SubscribeImage } from 'src/common/models/subscribe-image.model';
 import { Metadata } from 'src/common/models/metadata.model';
 import { CerebrasService } from 'src/common/services/cerebras.service';
 import { join } from 'path';
@@ -90,12 +91,68 @@ export class VideoGenerationService {
     try {
       const audioFilePath = await this.resolveAudioFilePath(dto?.audioId);
       preparedAudioPath = await this.audioService.prepareAudio(audioFilePath);
-      await this.imageToVideoService.stitch(
-        framePath,
-        15,
-        outputPath,
-        preparedAudioPath ?? undefined,
-      );
+
+      if (dto?.subscribeImageId) {
+        const subscribeImage = await SubscribeImage.findByPk(
+          dto.subscribeImageId,
+          { raw: true },
+        );
+        if (!subscribeImage) {
+          throw new NotFoundException(
+            `Subscribe image with ID ${dto.subscribeImageId} not found`,
+          );
+        }
+
+        const subscribeImgPath = join(
+          process.cwd(),
+          subscribeImage.path,
+        );
+        if (!existsSync(subscribeImgPath)) {
+          throw new NotFoundException(
+            `Subscribe image file not found at ${subscribeImage.path}`,
+          );
+        }
+
+        const mainSegmentPath = join(
+          outputDir,
+          `segment-main-${timePart}.mp4`,
+        );
+        const subscribeSegmentPath = join(
+          outputDir,
+          `segment-subscribe-${timePart}.mp4`,
+        );
+        const concatPath = join(
+          outputDir,
+          `concat-${timePart}.mp4`,
+        );
+
+        await this.imageToVideoService.stitch(framePath, 10, mainSegmentPath);
+        await this.imageToVideoService.stitch(
+          subscribeImgPath,
+          5,
+          subscribeSegmentPath,
+        );
+        await this.imageToVideoService.concatenate(
+          [mainSegmentPath, subscribeSegmentPath],
+          concatPath,
+        );
+        await this.imageToVideoService.mergeAudio(
+          concatPath,
+          preparedAudioPath ?? undefined,
+          outputPath,
+        );
+
+        this.safeUnlink(mainSegmentPath);
+        this.safeUnlink(subscribeSegmentPath);
+        this.safeUnlink(concatPath);
+      } else {
+        await this.imageToVideoService.stitch(
+          framePath,
+          15,
+          outputPath,
+          preparedAudioPath ?? undefined,
+        );
+      }
     } finally {
       this.audioService.cleanupTemp(preparedAudioPath);
     }
@@ -116,6 +173,7 @@ export class VideoGenerationService {
     backgroundVideoId: string,
     audioId?: string,
     theme?: string,
+    subscribeImageId?: string,
   ): Promise<{ outputPath: string; metadata: Metadata }> {
     const contentRecord = await VideoContent.findByPk(metadataId, {
       raw: true,
@@ -178,13 +236,71 @@ export class VideoGenerationService {
     try {
       const audioFilePath = await this.resolveAudioFilePath(audioId);
       preparedAudioPath = await this.audioService.prepareAudio(audioFilePath);
-      await this.imageToVideoService.stitchWithOverlay(
-        backgroundVideoPath,
-        overlayPath,
-        15,
-        outputPath,
-        preparedAudioPath ?? undefined,
-      );
+
+      if (subscribeImageId) {
+        const subscribeImage = await SubscribeImage.findByPk(
+          subscribeImageId,
+          { raw: true },
+        );
+        if (!subscribeImage) {
+          throw new NotFoundException(
+            `Subscribe image with ID ${subscribeImageId} not found`,
+          );
+        }
+
+        const subscribeImgPath = join(
+          process.cwd(),
+          subscribeImage.path,
+        );
+        if (!existsSync(subscribeImgPath)) {
+          throw new NotFoundException(
+            `Subscribe image file not found at ${subscribeImage.path}`,
+          );
+        }
+
+        const mainSegmentPath = join(
+          outputDir,
+          `segment-main-${timePart}.mp4`,
+        );
+        const subscribeSegmentPath = join(
+          outputDir,
+          `segment-subscribe-${timePart}.mp4`,
+        );
+        const concatPath = join(outputDir, `concat-${timePart}.mp4`);
+
+        await this.imageToVideoService.stitchWithOverlay(
+          backgroundVideoPath,
+          overlayPath,
+          10,
+          mainSegmentPath,
+        );
+        await this.imageToVideoService.stitch(
+          subscribeImgPath,
+          5,
+          subscribeSegmentPath,
+        );
+        await this.imageToVideoService.concatenate(
+          [mainSegmentPath, subscribeSegmentPath],
+          concatPath,
+        );
+        await this.imageToVideoService.mergeAudio(
+          concatPath,
+          preparedAudioPath ?? undefined,
+          outputPath,
+        );
+
+        this.safeUnlink(mainSegmentPath);
+        this.safeUnlink(subscribeSegmentPath);
+        this.safeUnlink(concatPath);
+      } else {
+        await this.imageToVideoService.stitchWithOverlay(
+          backgroundVideoPath,
+          overlayPath,
+          15,
+          outputPath,
+          preparedAudioPath ?? undefined,
+        );
+      }
     } finally {
       this.audioService.cleanupTemp(preparedAudioPath);
       if (existsSync(overlayPath)) {
@@ -284,6 +400,16 @@ export class VideoGenerationService {
       };
     } catch {
       return { enabled: false, opacity: 0.45 };
+    }
+  }
+
+  private safeUnlink(filePath: string): void {
+    try {
+      if (existsSync(filePath)) {
+        unlinkSync(filePath);
+      }
+    } catch {
+      /* ignore */
     }
   }
 

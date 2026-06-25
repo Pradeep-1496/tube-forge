@@ -32,7 +32,10 @@ export class VideoGenerationController {
   }
 
   @Post('generate/:id')
-  @ApiOperation({ summary: 'Generate a 15-second video from video content ID' })
+  @ApiOperation({
+    summary:
+      'Generate a 15-second video from video content ID (10s main + 5s subscribe image if subscribeImageId provided)',
+  })
   @ApiParam({
     name: 'id',
     description: 'VideoContent ID to generate video from',
@@ -45,7 +48,7 @@ export class VideoGenerationController {
   @Post('generate-from-video/:videoContentId/:backgroundVideoId')
   @ApiOperation({
     summary:
-      'Generate a 15-second video from video content + background video + optional audio + theme',
+      'Generate a 15-second video from video content + background video + optional audio + theme (10s main + 5s subscribe image if subscribeImageId provided)',
   })
   @ApiParam({
     name: 'videoContentId',
@@ -66,6 +69,7 @@ export class VideoGenerationController {
       backgroundVideoId,
       dto?.audioId,
       dto?.theme,
+      dto?.subscribeImageId,
     );
   }
 

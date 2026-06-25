@@ -1,7 +1,7 @@
 ﻿import { Injectable } from '@nestjs/common';
 import { spawn } from 'child_process';
 import { join } from 'path';
-import { existsSync, mkdirSync } from 'fs';
+import { existsSync, mkdirSync, writeFileSync, unlinkSync } from 'fs';
 
 @Injectable()
 export class ImageToVideoService {
@@ -109,6 +109,105 @@ export class ImageToVideoService {
       ffmpeg.on('close', (code) => {
         if (code !== 0) {
           reject(new Error(`FFmpeg failed with code ${code}`));
+          return;
+        }
+        resolve();
+      });
+
+      ffmpeg.on('error', (err) => reject(err));
+    });
+  }
+
+  async concatenate(
+    segmentPaths: string[],
+    outputPath: string,
+  ): Promise<void> {
+    const outputDir = join(outputPath, '..');
+    if (!existsSync(outputDir)) {
+      mkdirSync(outputDir, { recursive: true });
+    }
+
+    const listPath = join(
+      outputDir,
+      `concat-list-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.txt`,
+    );
+    const listContent = segmentPaths
+      .map((p) => `file '${p.replace(/'/g, "'\\''")}'`)
+      .join('\n');
+    writeFileSync(listPath, listContent);
+
+    return new Promise((resolve, reject) => {
+      const args: string[] = [
+        '-f',
+        'concat',
+        '-safe',
+        '0',
+        '-i',
+        listPath,
+        '-c',
+        'copy',
+        '-y',
+        outputPath,
+      ];
+
+      const ffmpeg = spawn('ffmpeg', args);
+
+      const cleanup = () => {
+        if (existsSync(listPath)) {
+          try {
+            unlinkSync(listPath);
+          } catch {
+            /* ignore cleanup errors */
+          }
+        }
+      };
+
+      ffmpeg.on('close', (code) => {
+        cleanup();
+        if (code !== 0) {
+          reject(new Error(`FFmpeg concatenate failed with code ${code}`));
+          return;
+        }
+        resolve();
+      });
+
+      ffmpeg.on('error', (err) => {
+        cleanup();
+        reject(err);
+      });
+    });
+  }
+
+  async mergeAudio(
+    videoPath: string,
+    audioPath: string | undefined,
+    outputPath: string,
+  ): Promise<void> {
+    const outputDir = join(outputPath, '..');
+    if (!existsSync(outputDir)) {
+      mkdirSync(outputDir, { recursive: true });
+    }
+
+    return new Promise((resolve, reject) => {
+      const args: string[] = ['-i', videoPath];
+
+      if (audioPath) {
+        args.push('-i', audioPath);
+      }
+
+      if (audioPath) {
+        args.push('-c:v', 'copy', '-c:a', 'aac', '-shortest');
+      } else {
+        args.push('-c:v', 'copy');
+      }
+
+      args.push('-y', outputPath);
+
+      const ffmpeg = spawn('ffmpeg', args);
+
+      ffmpeg.on('close', (code) => {
+        if (code !== 0) {
+          reject(new Error(`FFmpeg mergeAudio failed with code ${code}`));
           return;
         }
         resolve();
