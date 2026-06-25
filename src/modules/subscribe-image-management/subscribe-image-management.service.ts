@@ -50,7 +50,7 @@ export class SubscribeImageManagementService {
     let outputExt: string;
     if (imageType === 'portrait') {
       processedBuffer = await sharp(file.buffer)
-        .resize(1080, 1920, { fit: 'fill' })
+        .resize(1080, 1920, { fit: 'cover' })
         .jpeg({ quality: 90 })
         .toBuffer();
       outputExt = 'jpg';
@@ -80,12 +80,7 @@ export class SubscribeImageManagementService {
 
     return SubscribeImage.create({
       name,
-      path: join(
-        'assets',
-        'subscribe-images',
-        imageType,
-        finalName,
-      ),
+      path: join('assets', 'subscribe-images', imageType, finalName),
       size: sizeInBytes,
       type: imageType,
     });
@@ -98,9 +93,7 @@ export class SubscribeImageManagementService {
   async findOne(id: string): Promise<SubscribeImage> {
     const subscribeImage = await SubscribeImage.findByPk(id, { raw: true });
     if (!subscribeImage) {
-      throw new NotFoundException(
-        `Subscribe image with ID ${id} not found`,
-      );
+      throw new NotFoundException(`Subscribe image with ID ${id} not found`);
     }
     return subscribeImage;
   }
@@ -115,9 +108,7 @@ export class SubscribeImageManagementService {
   ): Promise<SubscribeImage> {
     const subscribeImage = await SubscribeImage.findByPk(id);
     if (!subscribeImage) {
-      throw new NotFoundException(
-        `Subscribe image with ID ${id} not found`,
-      );
+      throw new NotFoundException(`Subscribe image with ID ${id} not found`);
     }
 
     const updatePayload: Record<string, string | number> = {};
@@ -186,9 +177,7 @@ export class SubscribeImageManagementService {
   async remove(id: string): Promise<void> {
     const subscribeImage = await SubscribeImage.findByPk(id);
     if (!subscribeImage) {
-      throw new NotFoundException(
-        `Subscribe image with ID ${id} not found`,
-      );
+      throw new NotFoundException(`Subscribe image with ID ${id} not found`);
     }
 
     const fullPath = join(process.cwd(), subscribeImage.path);

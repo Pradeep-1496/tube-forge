@@ -103,28 +103,19 @@ export class VideoGenerationService {
           );
         }
 
-        const subscribeImgPath = join(
-          process.cwd(),
-          subscribeImage.path,
-        );
+        const subscribeImgPath = join(process.cwd(), subscribeImage.path);
         if (!existsSync(subscribeImgPath)) {
           throw new NotFoundException(
             `Subscribe image file not found at ${subscribeImage.path}`,
           );
         }
 
-        const mainSegmentPath = join(
-          outputDir,
-          `segment-main-${timePart}.mp4`,
-        );
+        const mainSegmentPath = join(outputDir, `segment-main-${timePart}.mp4`);
         const subscribeSegmentPath = join(
           outputDir,
           `segment-subscribe-${timePart}.mp4`,
         );
-        const concatPath = join(
-          outputDir,
-          `concat-${timePart}.mp4`,
-        );
+        const concatPath = join(outputDir, `concat-${timePart}.mp4`);
 
         await this.imageToVideoService.stitch(framePath, 10, mainSegmentPath);
         await this.imageToVideoService.stitch(
@@ -238,30 +229,23 @@ export class VideoGenerationService {
       preparedAudioPath = await this.audioService.prepareAudio(audioFilePath);
 
       if (subscribeImageId) {
-        const subscribeImage = await SubscribeImage.findByPk(
-          subscribeImageId,
-          { raw: true },
-        );
+        const subscribeImage = await SubscribeImage.findByPk(subscribeImageId, {
+          raw: true,
+        });
         if (!subscribeImage) {
           throw new NotFoundException(
             `Subscribe image with ID ${subscribeImageId} not found`,
           );
         }
 
-        const subscribeImgPath = join(
-          process.cwd(),
-          subscribeImage.path,
-        );
+        const subscribeImgPath = join(process.cwd(), subscribeImage.path);
         if (!existsSync(subscribeImgPath)) {
           throw new NotFoundException(
             `Subscribe image file not found at ${subscribeImage.path}`,
           );
         }
 
-        const mainSegmentPath = join(
-          outputDir,
-          `segment-main-${timePart}.mp4`,
-        );
+        const mainSegmentPath = join(outputDir, `segment-main-${timePart}.mp4`);
         const subscribeSegmentPath = join(
           outputDir,
           `segment-subscribe-${timePart}.mp4`,
@@ -414,6 +398,15 @@ export class VideoGenerationService {
   }
 
   getAvailableThemes(): string[] {
-    return ['glassmorphism', 'neon', 'viral', 'apple', 'gold'];
+    return [
+      'glassmorphism',
+      'neon',
+      'viral',
+      'apple',
+      'gold',
+      'none',
+      'custom',
+      'news',
+    ];
   }
 }

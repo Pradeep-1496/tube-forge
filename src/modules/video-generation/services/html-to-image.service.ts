@@ -12,6 +12,9 @@ import {
   Glassmorphism,
   LuxuryGold,
   NeonCard,
+  None,
+  Custom,
+  News,
 } from '../templates/index';
 
 @Injectable()
@@ -106,6 +109,9 @@ export class HtmlToImageService {
       viral: ViralShorts,
       apple: ApplePremium,
       gold: LuxuryGold,
+      none: None,
+      custom: Custom,
+      news: News,
     };
 
     const fn = map[key as keyof typeof map] || Glassmorphism;
