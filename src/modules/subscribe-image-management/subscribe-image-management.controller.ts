@@ -1,0 +1,121 @@
+import {
+  Controller,
+  Post,
+  Get,
+  Put,
+  Delete,
+  Param,
+  Body,
+  UseInterceptors,
+  UploadedFile,
+  BadRequestException,
+} from '@nestjs/common';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiParam,
+  ApiBody,
+  ApiConsumes,
+  ApiResponse,
+} from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { SubscribeImageManagementService } from './subscribe-image-management.service';
+import { CreateSubscribeImageDto } from './dto/create-subscribe-image.dto';
+import { UpdateSubscribeImageDto } from './dto/update-subscribe-image.dto';
+import { SubscribeImage } from 'src/common/models/subscribe-image.model';
+
+@ApiTags('subscribe-images')
+@Controller('subscribe-images')
+export class SubscribeImageManagementController {
+  constructor(
+    private readonly subscribeImageManagementService: SubscribeImageManagementService,
+  ) {}
+
+  @Post('upload')
+  @ApiOperation({ summary: 'Upload a new subscribe image' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({ type: CreateSubscribeImageDto })
+  @ApiResponse({
+    status: 201,
+    description: 'Subscribe image uploaded successfully',
+    type: SubscribeImage,
+  })
+  @ApiResponse({ status: 400, description: 'Bad request' })
+  @UseInterceptors(FileInterceptor('file'))
+  async upload(
+    @UploadedFile() file: Express.Multer.File,
+    @Body('name') name: string,
+    @Body('type') type?: string,
+  ) {
+    if (!name) {
+      throw new BadRequestException('Name is required');
+    }
+    return this.subscribeImageManagementService.create(
+      file,
+      name,
+      type as 'portrait' | 'landscape',
+    );
+  }
+
+  @Get()
+  @ApiOperation({ summary: 'Get all subscribe images' })
+  @ApiResponse({
+    status: 200,
+    description: 'List of all subscribe images',
+    type: [SubscribeImage],
+  })
+  async findAll() {
+    return this.subscribeImageManagementService.findAll();
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: 'Get subscribe image by ID' })
+  @ApiParam({ name: 'id', description: 'Subscribe image ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'Subscribe image details',
+    type: SubscribeImage,
+  })
+  @ApiResponse({ status: 404, description: 'Subscribe image not found' })
+  async findOne(@Param('id') id: string) {
+    return this.subscribeImageManagementService.findOne(id);
+  }
+
+  @Put(':id')
+  @ApiOperation({ summary: 'Update subscribe image by ID' })
+  @ApiParam({ name: 'id', description: 'Subscribe image ID' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({ type: UpdateSubscribeImageDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Subscribe image updated successfully',
+    type: SubscribeImage,
+  })
+  @ApiResponse({ status: 404, description: 'Subscribe image not found' })
+  @UseInterceptors(FileInterceptor('file'))
+  async update(
+    @Param('id') id: string,
+    @UploadedFile() file?: Express.Multer.File,
+    @Body('name') name?: string,
+    @Body('type') type?: string,
+  ) {
+    return this.subscribeImageManagementService.update(id, {
+      file,
+      name,
+      type: type as 'portrait' | 'landscape' | undefined,
+    });
+  }
+
+  @Delete(':id')
+  @ApiOperation({ summary: 'Delete subscribe image' })
+  @ApiParam({ name: 'id', description: 'Subscribe image ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'Subscribe image deleted successfully',
+  })
+  @ApiResponse({ status: 404, description: 'Subscribe image not found' })
+  async remove(@Param('id') id: string) {
+    await this.subscribeImageManagementService.remove(id);
+    return { message: 'Subscribe image deleted successfully' };
+  }
+}

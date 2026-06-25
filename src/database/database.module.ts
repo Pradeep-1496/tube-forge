@@ -6,6 +6,7 @@ import { Background } from 'src/common/models/background.model';
 import { Audio } from 'src/common/models/audio.model';
 import { BackgroundVideo } from 'src/common/models/background-video.model';
 import { Metadata } from 'src/common/models/metadata.model';
+import { SubscribeImage } from 'src/common/models/subscribe-image.model';
 
 @Module({
   imports: [
@@ -18,7 +19,7 @@ import { Metadata } from 'src/common/models/metadata.model';
       password: process.env.DB_PASSWORD,
       autoLoadModels: true,
       synchronize: true,
-      models: [VideoContent, Background, Audio, BackgroundVideo, Metadata],
+      models: [VideoContent, Background, Audio, BackgroundVideo, Metadata, SubscribeImage],
     }),
   ],
 })

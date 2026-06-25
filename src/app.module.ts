@@ -6,6 +6,7 @@ import { AudioManagementModule } from './modules/audio-management/audio-manageme
 import { BackgroundVideoManagementModule } from './modules/background-video-management/background-video-management.module';
 import { ContentManagementModule } from './modules/content-management/content-management.module';
 import { MetadataManagementModule } from './modules/metadata-management/metadata-management.module';
+import { SubscribeImageManagementModule } from './modules/subscribe-image-management/subscribe-image-management.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { MetadataManagementModule } from './modules/metadata-management/metadata
     BackgroundVideoManagementModule,
     ContentManagementModule,
     MetadataManagementModule,
+    SubscribeImageManagementModule,
   ],
   controllers: [],
   providers: [],
