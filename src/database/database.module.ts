@@ -19,7 +19,14 @@ import { SubscribeImage } from 'src/common/models/subscribe-image.model';
       password: process.env.DB_PASSWORD,
       autoLoadModels: true,
       synchronize: true,
-      models: [VideoContent, Background, Audio, BackgroundVideo, Metadata, SubscribeImage],
+      models: [
+        VideoContent,
+        Background,
+        Audio,
+        BackgroundVideo,
+        Metadata,
+        SubscribeImage,
+      ],
     }),
   ],
 })

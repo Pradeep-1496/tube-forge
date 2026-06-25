@@ -13,7 +13,16 @@ export class GenerateVideoDto {
   @ApiPropertyOptional({
     description: 'Theme key to use for the video template',
     example: 'neon',
-    enum: ['glassmorphism', 'neon', 'viral', 'apple', 'gold', 'none', 'custome', 'news'],
+    enum: [
+      'glassmorphism',
+      'neon',
+      'viral',
+      'apple',
+      'gold',
+      'none',
+      'custome',
+      'news',
+    ],
   })
   @IsOptional()
   @IsString()

@@ -118,10 +118,7 @@ export class ImageToVideoService {
     });
   }
 
-  async concatenate(
-    segmentPaths: string[],
-    outputPath: string,
-  ): Promise<void> {
+  async concatenate(segmentPaths: string[], outputPath: string): Promise<void> {
     const outputDir = join(outputPath, '..');
     if (!existsSync(outputDir)) {
       mkdirSync(outputDir, { recursive: true });
