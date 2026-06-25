@@ -1,5 +1,5 @@
 ﻿import { Injectable, NotFoundException } from '@nestjs/common';
-import { Metadata } from '../../common/models/metadata.model';
+import { VideoContent } from '../../common/models/video-content.model';
 import { Background } from '../../common/models/background.model';
 import { BackgroundVideo } from '../../common/models/background-video.model';
 import { Audio } from '../../common/models/audio.model';
@@ -29,22 +29,22 @@ export class VideoGenerationService {
     private readonly backgroundProvider: BackgroundImageProvider,
   ) {}
 
-  async findAll(): Promise<Metadata[]> {
-    return Metadata.findAll();
+  async findAll(): Promise<VideoContent[]> {
+    return VideoContent.findAll();
   }
 
-  async findOne(id: string): Promise<Metadata> {
-    const metadata = await Metadata.findByPk(id, { raw: true });
+  async findOne(id: string): Promise<VideoContent> {
+    const metadata = await VideoContent.findByPk(id, { raw: true });
     if (!metadata) {
-      throw new NotFoundException(`Metadata with ID ${id} not found`);
+      throw new NotFoundException(`VideoContent with ID ${id} not found`);
     }
     return metadata;
   }
 
   async generateVideo(id: string, dto?: GenerateVideoDto): Promise<string> {
-    const metadata = await Metadata.findByPk(id, { raw: true });
+    const metadata = await VideoContent.findByPk(id, { raw: true });
     if (!metadata) {
-      throw new NotFoundException(`Metadata with ID ${id} not found`);
+      throw new NotFoundException(`VideoContent with ID ${id} not found`);
     }
 
     const { title, content } = metadata;
@@ -105,9 +105,9 @@ export class VideoGenerationService {
     audioId?: string,
     theme?: string,
   ): Promise<string> {
-    const metadata = await Metadata.findByPk(metadataId, { raw: true });
+    const metadata = await VideoContent.findByPk(metadataId, { raw: true });
     if (!metadata) {
-      throw new NotFoundException(`Metadata with ID ${metadataId} not found`);
+      throw new NotFoundException(`VideoContent with ID ${metadataId} not found`);
     }
 
     const { title, content } = metadata;

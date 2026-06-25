@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
 import 'dotenv/config';
-import { Metadata } from 'src/common/models/metadata.model';
+import { VideoContent } from 'src/common/models/video-content.model';
 import { Background } from 'src/common/models/background.model';
 import { Audio } from 'src/common/models/audio.model';
 import { BackgroundVideo } from 'src/common/models/background-video.model';
@@ -17,7 +17,7 @@ import { BackgroundVideo } from 'src/common/models/background-video.model';
       password: process.env.DB_PASSWORD,
       autoLoadModels: true,
       synchronize: true,
-      models: [Metadata, Background, Audio, BackgroundVideo],
+      models: [VideoContent, Background, Audio, BackgroundVideo],
     }),
   ],
 })

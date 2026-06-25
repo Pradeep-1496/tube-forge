@@ -17,7 +17,7 @@ import {
 import { ContentManagementService } from './content-management.service';
 import { CreateContentDto } from './dto/create-content.dto';
 import { UpdateContentDto } from './dto/update-content.dto';
-import { Metadata } from 'src/common/models/metadata.model';
+import { VideoContent } from 'src/common/models/video-content.model';
 
 @ApiTags('content')
 @Controller('content')
@@ -32,7 +32,7 @@ export class ContentManagementController {
   @ApiResponse({
     status: 201,
     description: 'Content created successfully',
-    type: Metadata,
+    type: VideoContent,
   })
   @ApiResponse({ status: 400, description: 'Bad request' })
   async create(@Body() dto: CreateContentDto) {
@@ -44,7 +44,7 @@ export class ContentManagementController {
   @ApiResponse({
     status: 200,
     description: 'List of all content',
-    type: [Metadata],
+    type: [VideoContent],
   })
   async findAll() {
     return this.contentManagementService.findAll();
@@ -56,7 +56,7 @@ export class ContentManagementController {
   @ApiResponse({
     status: 200,
     description: 'Content details',
-    type: Metadata,
+    type: VideoContent,
   })
   @ApiResponse({ status: 404, description: 'Content not found' })
   async findOne(@Param('id') id: string) {
@@ -70,7 +70,7 @@ export class ContentManagementController {
   @ApiResponse({
     status: 200,
     description: 'Content updated successfully',
-    type: Metadata,
+    type: VideoContent,
   })
   @ApiResponse({ status: 404, description: 'Content not found' })
   async update(@Param('id') id: string, @Body() dto: UpdateContentDto) {

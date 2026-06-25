@@ -1,11 +1,11 @@
 import { Table, Column, Model, DataType } from 'sequelize-typescript';
 
 @Table({
-  tableName: 'content',
+  tableName: 'video_content',
   timestamps: true,
   underscored: true,
 })
-export class Metadata extends Model {
+export class VideoContent extends Model {
   @Column({
     type: DataType.UUID,
     primaryKey: true,
