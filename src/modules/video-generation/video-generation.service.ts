@@ -107,7 +107,9 @@ export class VideoGenerationService {
   ): Promise<string> {
     const metadata = await VideoContent.findByPk(metadataId, { raw: true });
     if (!metadata) {
-      throw new NotFoundException(`VideoContent with ID ${metadataId} not found`);
+      throw new NotFoundException(
+        `VideoContent with ID ${metadataId} not found`,
+      );
     }
 
     const { title, content } = metadata;

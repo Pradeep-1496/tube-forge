@@ -5,6 +5,7 @@ import { BackgroundManagementModule } from './modules/background-management/back
 import { AudioManagementModule } from './modules/audio-management/audio-management.module';
 import { BackgroundVideoManagementModule } from './modules/background-video-management/background-video-management.module';
 import { ContentManagementModule } from './modules/content-management/content-management.module';
+import { MetadataManagementModule } from './modules/metadata-management/metadata-management.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { ContentManagementModule } from './modules/content-management/content-ma
     AudioManagementModule,
     BackgroundVideoManagementModule,
     ContentManagementModule,
+    MetadataManagementModule,
   ],
   controllers: [],
   providers: [],

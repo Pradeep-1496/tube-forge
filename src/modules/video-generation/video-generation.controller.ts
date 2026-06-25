@@ -33,7 +33,10 @@ export class VideoGenerationController {
 
   @Post('generate/:id')
   @ApiOperation({ summary: 'Generate a 15-second video from video content ID' })
-  @ApiParam({ name: 'id', description: 'VideoContent ID to generate video from' })
+  @ApiParam({
+    name: 'id',
+    description: 'VideoContent ID to generate video from',
+  })
   @ApiBody({ type: GenerateVideoDto })
   generateVideo(@Param('id') id: string, @Body() dto: GenerateVideoDto) {
     return this.videoGenerationService.generateVideo(id, dto);

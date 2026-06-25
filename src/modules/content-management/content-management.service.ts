@@ -1,9 +1,17 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { VideoContent } from 'src/common/models/video-content.model';
 
 @Injectable()
 export class ContentManagementService {
-  async create(data: { title: string; content: string; type?: string }): Promise<VideoContent> {
+  async create(data: {
+    title: string;
+    content: string;
+    type?: string;
+  }): Promise<VideoContent> {
     if (!data.title || !data.content) {
       throw new BadRequestException('Title and content are required');
     }
@@ -26,7 +34,10 @@ export class ContentManagementService {
     return record;
   }
 
-  async update(id: string, data: { title?: string; content?: string; type?: string }): Promise<VideoContent> {
+  async update(
+    id: string,
+    data: { title?: string; content?: string; type?: string },
+  ): Promise<VideoContent> {
     const record = await VideoContent.findByPk(id);
     if (!record) {
       throw new NotFoundException(`Content with ID ${id} not found`);
