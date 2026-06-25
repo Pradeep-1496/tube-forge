@@ -15,7 +15,7 @@ export class BackgroundManagementService {
     process.cwd(),
     'assets',
     'backgrounds',
-    'protrait',
+    'portrait',
   );
   private readonly LANDSCAPE_DIR = join(
     process.cwd(),
@@ -47,6 +47,8 @@ export class BackgroundManagementService {
           : BackgroundType.PORTRAIT;
     }
 
+    
+
     const targetDir =
       imageType === BackgroundType.LANDSCAPE
         ? this.LANDSCAPE_DIR
@@ -71,7 +73,7 @@ export class BackgroundManagementService {
       path: join(
         'assets',
         'backgrounds',
-        imageType === BackgroundType.LANDSCAPE ? 'landscape' : 'protrait',
+        imageType === BackgroundType.LANDSCAPE ? 'landscape' : 'portrait',
         finalName,
       ),
       size: sizeInBytes,

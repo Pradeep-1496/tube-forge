@@ -7,6 +7,8 @@ import { BackgroundVideoManagementModule } from './modules/background-video-mana
 import { ContentManagementModule } from './modules/content-management/content-management.module';
 import { MetadataManagementModule } from './modules/metadata-management/metadata-management.module';
 import { SubscribeImageManagementModule } from './modules/subscribe-image-management/subscribe-image-management.module';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 
 @Module({
   imports: [
@@ -18,6 +20,30 @@ import { SubscribeImageManagementModule } from './modules/subscribe-image-manage
     ContentManagementModule,
     MetadataManagementModule,
     SubscribeImageManagementModule,
+    ServeStaticModule.forRoot(
+      {
+        rootPath: join(process.cwd(), 'output-videos'),
+        serveRoot: '/generate',
+      },
+      {
+        rootPath: join(process.cwd(), 'assets', 'audios'),
+        serveRoot: '/assets/audios',
+      },
+      {
+        rootPath: join(process.cwd(), 'assets', 'backgrounds', 'portrait'),
+        serveRoot: '/assets/backgrounds/portrait',
+      },
+      {
+        rootPath: join(process.cwd(), 'assets', 'bg_videos', 'portrait'),
+        serveRoot: '/assets/bg_videos/portrait',
+      },
+
+      
+      {
+        rootPath: join(process.cwd(), 'assets', 'subscribe-images', 'portrait'),
+        serveRoot: '/assets/subscribe-images/portrait',
+      },
+    ),
   ],
   controllers: [],
   providers: [],

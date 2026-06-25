@@ -15,7 +15,7 @@ export class BackgroundImageProvider implements OnModuleInit {
     process.cwd(),
     'assets',
     'backgrounds',
-    'protrait',
+    'portrait',
   );
   private readonly LANDSCAPE_DIR = join(
     process.cwd(),
