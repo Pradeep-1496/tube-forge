@@ -5,6 +5,7 @@ import { HtmlToImageService } from './services/html-to-image.service';
 import { ImageToVideoService } from './services/image-to-video.service';
 import { AudioService } from './services/audio.service';
 import { BackgroundImageProvider } from './services/background-image.provider';
+import { CerebrasService } from 'src/common/services/cerebras.service';
 
 @Module({
   controllers: [VideoGenerationController],
@@ -14,6 +15,7 @@ import { BackgroundImageProvider } from './services/background-image.provider';
     ImageToVideoService,
     AudioService,
     BackgroundImageProvider,
+    CerebrasService,
   ],
 })
 export class VideoGenerationModule {}

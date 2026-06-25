@@ -3,6 +3,8 @@ import { VideoContent } from '../../common/models/video-content.model';
 import { Background } from '../../common/models/background.model';
 import { BackgroundVideo } from '../../common/models/background-video.model';
 import { Audio } from '../../common/models/audio.model';
+import { Metadata } from 'src/common/models/metadata.model';
+import { CerebrasService } from 'src/common/services/cerebras.service';
 import { join } from 'path';
 import {
   existsSync,
@@ -27,6 +29,7 @@ export class VideoGenerationService {
     private readonly imageToVideoService: ImageToVideoService,
     private readonly audioService: AudioService,
     private readonly backgroundProvider: BackgroundImageProvider,
+    private readonly cerebrasService: CerebrasService,
   ) {}
 
   async findAll(): Promise<VideoContent[]> {
@@ -42,12 +45,12 @@ export class VideoGenerationService {
   }
 
   async generateVideo(id: string, dto?: GenerateVideoDto): Promise<string> {
-    const metadata = await VideoContent.findByPk(id, { raw: true });
-    if (!metadata) {
+    const contentRecord = await VideoContent.findByPk(id, { raw: true });
+    if (!contentRecord) {
       throw new NotFoundException(`VideoContent with ID ${id} not found`);
     }
 
-    const { title, content } = metadata;
+    const { title, content } = contentRecord;
 
     const outputDir = join(process.cwd(), 'output-videos');
     const thumbnailDir = join(process.cwd(), 'thumbnail');
@@ -96,6 +99,8 @@ export class VideoGenerationService {
 
     unlinkSync(framePath);
 
+    await this.generateAndStoreMetadata(title, content, filename);
+
     return outputPath;
   }
 
@@ -104,15 +109,17 @@ export class VideoGenerationService {
     backgroundVideoId: string,
     audioId?: string,
     theme?: string,
-  ): Promise<string> {
-    const metadata = await VideoContent.findByPk(metadataId, { raw: true });
-    if (!metadata) {
+  ): Promise<{ output: string; metaData: any }> {
+    const contentRecord = await VideoContent.findByPk(metadataId, {
+      raw: true,
+    });
+    if (!contentRecord) {
       throw new NotFoundException(
         `VideoContent with ID ${metadataId} not found`,
       );
     }
 
-    const { title, content } = metadata;
+    const { title, content } = contentRecord;
 
     const backgroundVideo = await BackgroundVideo.findByPk(backgroundVideoId, {
       raw: true,
@@ -178,7 +185,43 @@ export class VideoGenerationService {
       }
     }
 
-    return outputPath;
+    const metadataInfo = await this.generateAndStoreMetadata(
+      title,
+      content,
+      filename,
+    );
+
+    return {
+      output: outputPath,
+      metaData: metadataInfo,
+    };
+  }
+
+  private async generateAndStoreMetadata(
+    title: string,
+    content: string,
+    filename: string,
+  ): Promise<void> {
+    try {
+      const aiMetadata = await this.cerebrasService.generateMetadata(
+        title,
+        content,
+      );
+      await Metadata.create({
+        title: aiMetadata.title,
+        description: aiMetadata.description,
+        tags: aiMetadata.tags,
+        file_name: filename,
+        privacy_status: 'private',
+        default_language: 'en',
+        self_declared_made_for_kids: false,
+      });
+    } catch (error) {
+      console.error(
+        'Auto-metadata generation failed:',
+        error instanceof Error ? error.message : error,
+      );
+    }
   }
 
   private async resolveAudioFilePath(

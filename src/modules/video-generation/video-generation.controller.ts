@@ -17,14 +17,14 @@ export class VideoGenerationController {
     private readonly videoGenerationService: VideoGenerationService,
   ) {}
 
-  @Get('metadata')
+  @Get('videos')
   @ApiOperation({ summary: 'Get all video content records' })
   @ApiResponse({ status: 200, description: 'List of all video content' })
   findAll() {
     return this.videoGenerationService.findAll();
   }
 
-  @Get('metadata/:id')
+  @Get('video/:id')
   @ApiOperation({ summary: 'Get video content by ID' })
   @ApiParam({ name: 'id', description: 'VideoContent ID' })
   findOne(@Param('id') id: string) {
@@ -42,13 +42,13 @@ export class VideoGenerationController {
     return this.videoGenerationService.generateVideo(id, dto);
   }
 
-  @Post('generate-from-video/:metadataId/:backgroundVideoId')
+  @Post('generate-from-video/:videoContentId/:backgroundVideoId')
   @ApiOperation({
     summary:
       'Generate a 15-second video from video content + background video + optional audio + theme',
   })
   @ApiParam({
-    name: 'metadataId',
+    name: 'videoContentId',
     description: 'VideoContent ID to generate video from',
   })
   @ApiParam({
@@ -57,12 +57,12 @@ export class VideoGenerationController {
   })
   @ApiBody({ type: GenerateFromVideoDto })
   generateVideoFromBackgroundVideo(
-    @Param('metadataId') metadataId: string,
+    @Param('videoContentId') videoContentId: string,
     @Param('backgroundVideoId') backgroundVideoId: string,
     @Body() dto: GenerateFromVideoDto,
   ) {
     return this.videoGenerationService.generateVideoFromBackgroundVideo(
-      metadataId,
+      videoContentId,
       backgroundVideoId,
       dto?.audioId,
       dto?.theme,
