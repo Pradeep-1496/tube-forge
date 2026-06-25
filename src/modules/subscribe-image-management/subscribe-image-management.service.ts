@@ -46,6 +46,21 @@ export class SubscribeImageManagementService {
           : 'portrait';
     }
 
+    let processedBuffer: Buffer;
+    let outputExt: string;
+    if (imageType === 'portrait') {
+      processedBuffer = await sharp(file.buffer)
+        .resize(1080, 1920, { fit: 'fill' })
+        .jpeg({ quality: 90 })
+        .toBuffer();
+      outputExt = 'jpg';
+    } else {
+      processedBuffer = file.buffer;
+      outputExt = ext;
+    }
+
+    const extToUse = outputExt;
+
     const targetDir =
       imageType === 'landscape' ? this.LANDSCAPE_DIR : this.PORTRAIT_DIR;
     if (!existsSync(targetDir)) {
@@ -54,11 +69,11 @@ export class SubscribeImageManagementService {
 
     const finalName = this.getUniqueFilename(
       targetDir,
-      `${sanitizedName}.${ext}`,
+      `${sanitizedName}.${extToUse}`,
     );
     const targetPath = join(targetDir, finalName);
 
-    writeFileSync(targetPath, file.buffer);
+    writeFileSync(targetPath, processedBuffer);
 
     const fileStat = statSync(targetPath);
     const sizeInBytes = fileStat.size;
@@ -133,13 +148,26 @@ export class SubscribeImageManagementService {
         mkdirSync(targetDir, { recursive: true });
       }
 
+      let processedBuffer: Buffer;
+      let outputExt: string;
+      if (imageType === 'portrait') {
+        processedBuffer = await sharp(data.file.buffer)
+          .resize(1080, 1920, { fit: 'fill' })
+          .jpeg({ quality: 90 })
+          .toBuffer();
+        outputExt = 'jpg';
+      } else {
+        processedBuffer = data.file.buffer;
+        outputExt = this.getExtension(data.file.originalname);
+      }
+
       const finalName = this.getUniqueFilename(
         targetDir,
-        `${sanitizedName}.${ext}`,
+        `${sanitizedName}.${outputExt}`,
       );
       const targetPath = join(targetDir, finalName);
 
-      writeFileSync(targetPath, data.file.buffer);
+      writeFileSync(targetPath, processedBuffer);
 
       const fileStat = statSync(targetPath);
       updatePayload.path = join(
