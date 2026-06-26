@@ -2,8 +2,11 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { SubscribeImage } from 'src/common/models/subscribe-image.model';
+import { Visibility } from 'src/common/enums/visibility.enum';
+import { Op } from 'sequelize';
 import { join } from 'path';
 import { existsSync, mkdirSync, unlinkSync, statSync, writeFileSync } from 'fs';
 import sharp from 'sharp';
@@ -23,10 +26,16 @@ export class SubscribeImageManagementService {
     'landscape',
   );
 
+  private isAdmin(user: { role: string }): boolean {
+    return user.role === 'admin';
+  }
+
   async create(
     file: Express.Multer.File,
     name: string,
+    userId: string,
     type?: 'portrait' | 'landscape',
+    visibility?: string,
   ): Promise<SubscribeImage> {
     if (!file) {
       throw new BadRequestException('Image file is required');
@@ -83,17 +92,33 @@ export class SubscribeImageManagementService {
       path: join('assets', 'subscribe-images', imageType, finalName),
       size: sizeInBytes,
       type: imageType,
+      userId,
+      visibility: visibility || Visibility.PRIVATE,
     });
   }
 
-  async findAll(): Promise<SubscribeImage[]> {
-    return SubscribeImage.findAll({ order: [['created_at', 'DESC']] });
+  async findAll(user: { id: string; role: string }): Promise<SubscribeImage[]> {
+    if (this.isAdmin(user)) {
+      return SubscribeImage.findAll({ order: [['created_at', 'DESC']] });
+    }
+    return SubscribeImage.findAll({
+      where: {
+        [Op.or]: [
+          { userId: user.id },
+          { visibility: Visibility.PUBLIC },
+        ],
+      },
+      order: [['created_at', 'DESC']],
+    });
   }
 
-  async findOne(id: string): Promise<SubscribeImage> {
-    const subscribeImage = await SubscribeImage.findByPk(id, { raw: true });
+  async findOne(id: string, user: { id: string; role: string }): Promise<SubscribeImage> {
+    const subscribeImage = await SubscribeImage.findByPk(id);
     if (!subscribeImage) {
       throw new NotFoundException(`Subscribe image with ID ${id} not found`);
+    }
+    if (!this.isAdmin(user) && subscribeImage.userId !== user.id && subscribeImage.visibility !== Visibility.PUBLIC) {
+      throw new ForbiddenException('You do not have access to this subscribe image');
     }
     return subscribeImage;
   }
@@ -104,11 +129,16 @@ export class SubscribeImageManagementService {
       file?: Express.Multer.File;
       name?: string;
       type?: 'portrait' | 'landscape';
+      visibility?: string;
     },
+    user: { id: string; role: string },
   ): Promise<SubscribeImage> {
     const subscribeImage = await SubscribeImage.findByPk(id);
     if (!subscribeImage) {
       throw new NotFoundException(`Subscribe image with ID ${id} not found`);
+    }
+    if (!this.isAdmin(user) && subscribeImage.userId !== user.id) {
+      throw new ForbiddenException('You do not have permission to update this subscribe image');
     }
 
     const updatePayload: Record<string, string | number> = {};
@@ -119,6 +149,10 @@ export class SubscribeImageManagementService {
 
     if (data.type) {
       updatePayload.type = data.type;
+    }
+
+    if (data.visibility) {
+      updatePayload.visibility = data.visibility;
     }
 
     if (data.file) {
@@ -173,10 +207,13 @@ export class SubscribeImageManagementService {
     return subscribeImage.reload();
   }
 
-  async remove(id: string): Promise<void> {
+  async remove(id: string, user: { id: string; role: string }): Promise<void> {
     const subscribeImage = await SubscribeImage.findByPk(id);
     if (!subscribeImage) {
       throw new NotFoundException(`Subscribe image with ID ${id} not found`);
+    }
+    if (!this.isAdmin(user) && subscribeImage.userId !== user.id) {
+      throw new ForbiddenException('You do not have permission to delete this subscribe image');
     }
 
     const fullPath = join(process.cwd(), subscribeImage.path);

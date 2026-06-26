@@ -6,7 +6,9 @@ import {
   IsArray,
   IsDateString,
   IsNotEmpty,
+  IsIn,
 } from 'class-validator';
+import { Visibility } from 'src/common/enums/visibility.enum';
 
 export class CreateMetadataDto {
   @ApiProperty({
@@ -107,4 +109,14 @@ export class CreateMetadataDto {
   @IsOptional()
   @IsString()
   contentId?: string;
+
+  @ApiProperty({
+    enum: [Visibility.PUBLIC, Visibility.PRIVATE],
+    default: Visibility.PRIVATE,
+    description: 'Visibility of the metadata',
+    required: false,
+  })
+  @IsOptional()
+  @IsIn([Visibility.PUBLIC, Visibility.PRIVATE])
+  visibility?: Visibility;
 }

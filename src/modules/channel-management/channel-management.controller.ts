@@ -65,7 +65,7 @@ export class ChannelManagementController {
     type: [Channel],
   })
   async findAll(@CurrentUser() user: UserPlain) {
-    return this.channelManagementService.findAll(user.id);
+    return this.channelManagementService.findAll(user);
   }
 
   @Get(':id')
@@ -77,8 +77,8 @@ export class ChannelManagementController {
     type: Channel,
   })
   @ApiResponse({ status: 404, description: 'Channel not found' })
-  async findOne(@Param('id') id: string) {
-    return this.channelManagementService.findOne(id);
+  async findOne(@Param('id') id: string, @CurrentUser() user: UserPlain) {
+    return this.channelManagementService.findOne(id, user);
   }
 
   @Put(':id')
@@ -91,8 +91,8 @@ export class ChannelManagementController {
     type: Channel,
   })
   @ApiResponse({ status: 404, description: 'Channel not found' })
-  async update(@Param('id') id: string, @Body() dto: UpdateChannelDto) {
-    return this.channelManagementService.update(id, dto);
+  async update(@Param('id') id: string, @Body() dto: UpdateChannelDto, @CurrentUser() user: UserPlain) {
+    return this.channelManagementService.update(id, dto, user);
   }
 
   @Delete(':id')
@@ -100,8 +100,8 @@ export class ChannelManagementController {
   @ApiParam({ name: 'id', description: 'Channel ID' })
   @ApiResponse({ status: 200, description: 'Channel deleted successfully' })
   @ApiResponse({ status: 404, description: 'Channel not found' })
-  async remove(@Param('id') id: string) {
-    await this.channelManagementService.remove(id);
+  async remove(@Param('id') id: string, @CurrentUser() user: UserPlain) {
+    await this.channelManagementService.remove(id, user);
     return { message: 'Channel deleted successfully' };
   }
 }

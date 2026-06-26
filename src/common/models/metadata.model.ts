@@ -1,5 +1,7 @@
-import { Table, Column, Model, DataType } from 'sequelize-typescript';
+import { Table, Column, Model, DataType, BelongsTo, ForeignKey } from 'sequelize-typescript';
+import { User } from './user.model';
 import { MetadataStatus } from '../enums/metadata-status.enum';
+import { Visibility } from '../enums/visibility.enum';
 
 @Table({
   tableName: 'metadata',
@@ -123,4 +125,28 @@ export class Metadata extends Model {
     onUpdate: 'CASCADE',
   })
   contentId!: string;
+
+  @ForeignKey(() => User)
+  @Column({
+    type: DataType.UUID,
+    allowNull: false,
+    references: {
+      model: 'users',
+      key: 'id',
+    },
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+  })
+  userId!: string;
+
+  @BelongsTo(() => User)
+  user!: User;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+    values: [Visibility.PUBLIC, Visibility.PRIVATE],
+    defaultValue: Visibility.PRIVATE,
+  })
+  visibility!: Visibility;
 }

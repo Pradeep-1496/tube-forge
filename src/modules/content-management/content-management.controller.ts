@@ -64,8 +64,8 @@ export class ContentManagementController {
     description: 'List of all content',
     type: [VideoContent],
   })
-  async findAll() {
-    return this.contentManagementService.findAll();
+  async findAll(@CurrentUser() user: UserPlain) {
+    return this.contentManagementService.findAll(user);
   }
 
   @Get(':id')
@@ -77,8 +77,8 @@ export class ContentManagementController {
     type: VideoContent,
   })
   @ApiResponse({ status: 404, description: 'Content not found' })
-  async findOne(@Param('id') id: string) {
-    return this.contentManagementService.findOne(id);
+  async findOne(@Param('id') id: string, @CurrentUser() user: UserPlain) {
+    return this.contentManagementService.findOne(id, user);
   }
 
   @Put(':id')
@@ -91,8 +91,8 @@ export class ContentManagementController {
     type: VideoContent,
   })
   @ApiResponse({ status: 404, description: 'Content not found' })
-  async update(@Param('id') id: string, @Body() dto: UpdateContentDto) {
-    return this.contentManagementService.update(id, dto);
+  async update(@Param('id') id: string, @Body() dto: UpdateContentDto, @CurrentUser() user: UserPlain) {
+    return this.contentManagementService.update(id, dto, user);
   }
 
   @Delete(':id')
@@ -100,8 +100,8 @@ export class ContentManagementController {
   @ApiParam({ name: 'id', description: 'Content ID' })
   @ApiResponse({ status: 200, description: 'Content deleted successfully' })
   @ApiResponse({ status: 404, description: 'Content not found' })
-  async remove(@Param('id') id: string) {
-    await this.contentManagementService.remove(id);
+  async remove(@Param('id') id: string, @CurrentUser() user: UserPlain) {
+    await this.contentManagementService.remove(id, user);
     return { message: 'Content deleted successfully' };
   }
 }

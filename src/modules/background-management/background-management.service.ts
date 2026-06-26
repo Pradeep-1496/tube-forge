@@ -2,9 +2,12 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { Background } from 'src/common/models/background.model';
 import { BackgroundType } from 'src/common/enums/bg-type.enum';
+import { Visibility } from 'src/common/enums/visibility.enum';
+import { Op } from 'sequelize';
 import { join } from 'path';
 import { existsSync, mkdirSync, unlinkSync, statSync, writeFileSync } from 'fs';
 import sharp from 'sharp';
@@ -24,10 +27,16 @@ export class BackgroundManagementService {
     'landscape',
   );
 
+  private isAdmin(user: { role: string }): boolean {
+    return user.role === 'admin';
+  }
+
   async create(
     file: Express.Multer.File,
     name: string,
+    userId: string,
     type?: 'portrait' | 'landscape',
+    visibility?: string,
   ): Promise<Background> {
     if (!file) {
       throw new BadRequestException('Image file is required');
@@ -90,25 +99,44 @@ export class BackgroundManagementService {
       ),
       size: sizeInBytes,
       type: imageType,
+      userId,
+      visibility: visibility || Visibility.PRIVATE,
     });
   }
 
-  async findAll(): Promise<Background[]> {
-    return Background.findAll({ order: [['created_at', 'DESC']] });
+  async findAll(user: { id: string; role: string }): Promise<Background[]> {
+    if (this.isAdmin(user)) {
+      return Background.findAll({ order: [['created_at', 'DESC']] });
+    }
+    return Background.findAll({
+      where: {
+        [Op.or]: [
+          { userId: user.id },
+          { visibility: Visibility.PUBLIC },
+        ],
+      },
+      order: [['created_at', 'DESC']],
+    });
   }
 
-  async findOne(id: string): Promise<Background> {
-    const background = await Background.findByPk(id, { raw: true });
+  async findOne(id: string, user: { id: string; role: string }): Promise<Background> {
+    const background = await Background.findByPk(id);
     if (!background) {
       throw new NotFoundException(`Background with ID ${id} not found`);
+    }
+    if (!this.isAdmin(user) && background.userId !== user.id && background.visibility !== Visibility.PUBLIC) {
+      throw new ForbiddenException('You do not have access to this background');
     }
     return background;
   }
 
-  async remove(id: string): Promise<void> {
+  async remove(id: string, user: { id: string; role: string }): Promise<void> {
     const background = await Background.findByPk(id);
     if (!background) {
       throw new NotFoundException(`Background with ID ${id} not found`);
+    }
+    if (!this.isAdmin(user) && background.userId !== user.id) {
+      throw new ForbiddenException('You do not have permission to delete this background');
     }
 
     const fullPath = join(process.cwd(), background.path);

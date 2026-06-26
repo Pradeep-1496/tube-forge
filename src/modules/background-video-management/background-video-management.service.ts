@@ -2,9 +2,12 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { BackgroundVideo } from 'src/common/models/background-video.model';
 import { BackgroundVideoType } from 'src/common/enums/background-video-type.enum';
+import { Visibility } from 'src/common/enums/visibility.enum';
+import { Op } from 'sequelize';
 import { join } from 'path';
 import { existsSync, mkdirSync, unlinkSync, statSync, writeFileSync } from 'fs';
 import { spawn } from 'child_process';
@@ -24,10 +27,16 @@ export class BackgroundVideoManagementService {
     'landscape',
   );
 
+  private isAdmin(user: { role: string }): boolean {
+    return user.role === 'admin';
+  }
+
   async create(
     file: Express.Multer.File,
     name: string,
+    userId: string,
     type?: 'portrait' | 'landscape',
+    visibility?: string,
   ): Promise<BackgroundVideo> {
     if (!file) {
       throw new BadRequestException('Video file is required');
@@ -79,7 +88,52 @@ export class BackgroundVideoManagementService {
       ),
       size: sizeInBytes,
       type: videoType,
+      userId,
+      visibility: visibility || Visibility.PRIVATE,
     });
+  }
+
+  async findAll(user: { id: string; role: string }): Promise<BackgroundVideo[]> {
+    if (this.isAdmin(user)) {
+      return BackgroundVideo.findAll({ order: [['created_at', 'DESC']] });
+    }
+    return BackgroundVideo.findAll({
+      where: {
+        [Op.or]: [
+          { userId: user.id },
+          { visibility: Visibility.PUBLIC },
+        ],
+      },
+      order: [['created_at', 'DESC']],
+    });
+  }
+
+  async findOne(id: string, user: { id: string; role: string }): Promise<BackgroundVideo> {
+    const backgroundVideo = await BackgroundVideo.findByPk(id);
+    if (!backgroundVideo) {
+      throw new NotFoundException(`Background video with ID ${id} not found`);
+    }
+    if (!this.isAdmin(user) && backgroundVideo.userId !== user.id && backgroundVideo.visibility !== Visibility.PUBLIC) {
+      throw new ForbiddenException('You do not have access to this background video');
+    }
+    return backgroundVideo;
+  }
+
+  async remove(id: string, user: { id: string; role: string }): Promise<void> {
+    const backgroundVideo = await BackgroundVideo.findByPk(id);
+    if (!backgroundVideo) {
+      throw new NotFoundException(`Background video with ID ${id} not found`);
+    }
+    if (!this.isAdmin(user) && backgroundVideo.userId !== user.id) {
+      throw new ForbiddenException('You do not have permission to delete this background video');
+    }
+
+    const fullPath = join(process.cwd(), backgroundVideo.path);
+    if (existsSync(fullPath)) {
+      unlinkSync(fullPath);
+    }
+
+    await backgroundVideo.destroy();
   }
 
   private async transcodeToPortrait(
@@ -115,32 +169,6 @@ export class BackgroundVideoManagementService {
 
       ffmpeg.on('error', (err) => reject(err));
     });
-  }
-
-  async findAll(): Promise<BackgroundVideo[]> {
-    return BackgroundVideo.findAll({ order: [['created_at', 'DESC']] });
-  }
-
-  async findOne(id: string): Promise<BackgroundVideo> {
-    const backgroundVideo = await BackgroundVideo.findByPk(id, { raw: true });
-    if (!backgroundVideo) {
-      throw new NotFoundException(`Background video with ID ${id} not found`);
-    }
-    return backgroundVideo;
-  }
-
-  async remove(id: string): Promise<void> {
-    const backgroundVideo = await BackgroundVideo.findByPk(id);
-    if (!backgroundVideo) {
-      throw new NotFoundException(`Background video with ID ${id} not found`);
-    }
-
-    const fullPath = join(process.cwd(), backgroundVideo.path);
-    if (existsSync(fullPath)) {
-      unlinkSync(fullPath);
-    }
-
-    await backgroundVideo.destroy();
   }
 
   private sanitizeFilename(name: string): string {

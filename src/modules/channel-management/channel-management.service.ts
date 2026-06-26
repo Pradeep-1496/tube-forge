@@ -2,11 +2,17 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { Channel } from 'src/common/models/channel.model';
+import { Op } from 'sequelize';
 
 @Injectable()
 export class ChannelManagementService {
+  private isAdmin(user: { role: string }): boolean {
+    return user.role === 'admin';
+  }
+
   async create(data: {
     name: string;
     channelId: string;
@@ -32,18 +38,23 @@ export class ChannelManagementService {
     });
   }
 
-  async findAll(userId?: string): Promise<Channel[]> {
-    const where = userId ? { userId } : {};
+  async findAll(user: { id: string; role: string }): Promise<Channel[]> {
+    if (this.isAdmin(user)) {
+      return Channel.findAll({ order: [['created_at', 'DESC']] });
+    }
     return Channel.findAll({
-      where,
+      where: { userId: user.id },
       order: [['created_at', 'DESC']],
     });
   }
 
-  async findOne(id: string): Promise<Channel> {
-    const record = await Channel.findByPk(id, { raw: true });
+  async findOne(id: string, user: { id: string; role: string }): Promise<Channel> {
+    const record = await Channel.findByPk(id);
     if (!record) {
       throw new NotFoundException(`Channel with ID ${id} not found`);
+    }
+    if (!this.isAdmin(user) && record.userId !== user.id) {
+      throw new ForbiddenException('You do not have access to this channel');
     }
     return record;
   }
@@ -59,19 +70,26 @@ export class ChannelManagementService {
       refreshToken?: string;
       expiryDate?: number;
     },
+    user: { id: string; role: string },
   ): Promise<Channel> {
     const record = await Channel.findByPk(id);
     if (!record) {
       throw new NotFoundException(`Channel with ID ${id} not found`);
     }
+    if (!this.isAdmin(user) && record.userId !== user.id) {
+      throw new ForbiddenException('You do not have permission to update this channel');
+    }
     await record.update(data);
     return record;
   }
 
-  async remove(id: string): Promise<void> {
+  async remove(id: string, user: { id: string; role: string }): Promise<void> {
     const record = await Channel.findByPk(id);
     if (!record) {
       throw new NotFoundException(`Channel with ID ${id} not found`);
+    }
+    if (!this.isAdmin(user) && record.userId !== user.id) {
+      throw new ForbiddenException('You do not have permission to delete this channel');
     }
     await record.destroy();
   }

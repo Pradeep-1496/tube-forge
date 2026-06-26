@@ -25,6 +25,14 @@ import { CreateAudioDto } from './dto/create-audio.dto';
 import { Audio } from 'src/common/models/audio.model';
 import { RolesGuard } from 'src/common/guards/roles.guard';
 import { Roles } from 'src/common/decorators/roles.decorator';
+import { CurrentUser } from 'src/common/decorators/current-user.decorator';
+
+interface UserPlain {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+}
 
 @ApiTags('audios')
 @Controller('audios')
@@ -50,11 +58,13 @@ export class AudioManagementController {
   async upload(
     @UploadedFile() file: Express.Multer.File,
     @Body('name') name: string,
+    @CurrentUser() user: UserPlain,
+    @Body('visibility') visibility?: string,
   ) {
     if (!name) {
       throw new BadRequestException('Name is required');
     }
-    return this.audioManagementService.create(file, name);
+    return this.audioManagementService.create(file, name, user.id, visibility);
   }
 
   @Get()
@@ -64,8 +74,8 @@ export class AudioManagementController {
     description: 'List of all audios',
     type: [Audio],
   })
-  async findAll() {
-    return this.audioManagementService.findAll();
+  async findAll(@CurrentUser() user: UserPlain) {
+    return this.audioManagementService.findAll(user);
   }
 
   @Get(':id')
@@ -77,8 +87,8 @@ export class AudioManagementController {
     type: Audio,
   })
   @ApiResponse({ status: 404, description: 'Audio not found' })
-  async findOne(@Param('id') id: string) {
-    return this.audioManagementService.findOne(id);
+  async findOne(@Param('id') id: string, @CurrentUser() user: UserPlain) {
+    return this.audioManagementService.findOne(id, user);
   }
 
   @Delete(':id')
@@ -86,8 +96,8 @@ export class AudioManagementController {
   @ApiParam({ name: 'id', description: 'Audio ID' })
   @ApiResponse({ status: 200, description: 'Audio deleted successfully' })
   @ApiResponse({ status: 404, description: 'Audio not found' })
-  async remove(@Param('id') id: string) {
-    await this.audioManagementService.remove(id);
+  async remove(@Param('id') id: string, @CurrentUser() user: UserPlain) {
+    await this.audioManagementService.remove(id, user);
     return { message: 'Audio deleted successfully' };
   }
 }

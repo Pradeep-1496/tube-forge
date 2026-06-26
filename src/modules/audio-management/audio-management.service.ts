@@ -2,8 +2,11 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { Audio } from 'src/common/models/audio.model';
+import { Visibility } from 'src/common/enums/visibility.enum';
+import { Op } from 'sequelize';
 import { join } from 'path';
 import { existsSync, mkdirSync, unlinkSync, statSync, writeFileSync } from 'fs';
 import { spawn } from 'child_process';
@@ -12,7 +15,16 @@ import { spawn } from 'child_process';
 export class AudioManagementService {
   private readonly AUDIO_DIR = join(process.cwd(), 'assets', 'audios');
 
-  async create(file: Express.Multer.File, name: string): Promise<Audio> {
+  private isAdmin(user: { role: string }): boolean {
+    return user.role === 'admin';
+  }
+
+  async create(
+    file: Express.Multer.File,
+    name: string,
+    userId: string,
+    visibility?: string,
+  ): Promise<Audio> {
     if (!file) {
       throw new BadRequestException('Audio file is required');
     }
@@ -36,27 +48,55 @@ export class AudioManagementService {
     return Audio.create({
       name,
       path: join('assets', 'audios', finalName),
-      length: duration,
+      length: duration?.toFixed(2),
       size: sizeInBytes,
+      userId,
+      visibility: visibility || Visibility.PRIVATE,
     });
   }
 
-  async findAll(): Promise<Audio[]> {
-    return Audio.findAll({ order: [['created_at', 'DESC']] });
+  async findAll(user: { id: string; role: string }): Promise<Audio[]> {
+    if (this.isAdmin(user)) {
+      return Audio.findAll({ order: [['created_at', 'DESC']] });
+    }
+    return Audio.findAll({
+      where: {
+        [Op.or]: [{ userId: user.id }, { visibility: Visibility.PUBLIC }],
+      },
+      order: [['created_at', 'DESC']],
+    });
   }
 
-  async findOne(audioId: string): Promise<Audio> {
-    const audio = await Audio.findByPk(audioId, { raw: true });
+  async findOne(
+    audioId: string,
+    user: { id: string; role: string },
+  ): Promise<Audio> {
+    const audio = await Audio.findByPk(audioId);
     if (!audio) {
       throw new NotFoundException(`Audio with ID ${audioId} not found`);
+    }
+    if (
+      !this.isAdmin(user) &&
+      audio.userId !== user.id &&
+      audio.visibility !== Visibility.PUBLIC
+    ) {
+      throw new ForbiddenException('You do not have access to this audio');
     }
     return audio;
   }
 
-  async remove(audioId: string): Promise<void> {
+  async remove(
+    audioId: string,
+    user: { id: string; role: string },
+  ): Promise<void> {
     const audio = await Audio.findByPk(audioId);
     if (!audio) {
       throw new NotFoundException(`Audio with ID ${audioId} not found`);
+    }
+    if (!this.isAdmin(user) && audio.userId !== user.id) {
+      throw new ForbiddenException(
+        'You do not have permission to delete this audio',
+      );
     }
 
     const fullPath = join(process.cwd(), audio.path);

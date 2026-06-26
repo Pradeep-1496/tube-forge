@@ -34,15 +34,15 @@ export class VideoGenerationController {
   @Get('videos')
   @ApiOperation({ summary: 'Get all video content records' })
   @ApiResponse({ status: 200, description: 'List of all video content' })
-  findAll() {
-    return this.videoGenerationService.findAll();
+  findAll(@CurrentUser() user: UserPlain) {
+    return this.videoGenerationService.findAll(user);
   }
 
   @Get('video/:id')
   @ApiOperation({ summary: 'Get video content by ID' })
   @ApiParam({ name: 'id', description: 'VideoContent ID' })
-  findOne(@Param('id') id: string) {
-    return this.videoGenerationService.findOne(id);
+  findOne(@Param('id') id: string, @CurrentUser() user: UserPlain) {
+    return this.videoGenerationService.findOne(id, user);
   }
 
   @Post('generate/:id')

@@ -12,6 +12,14 @@ import { CreateMetadataDto } from './dto/create-metadata.dto';
 import { Metadata } from 'src/common/models/metadata.model';
 import { RolesGuard } from 'src/common/guards/roles.guard';
 import { Roles } from 'src/common/decorators/roles.decorator';
+import { CurrentUser } from 'src/common/decorators/current-user.decorator';
+
+interface UserPlain {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+}
 
 @ApiTags('metadata')
 @Controller('metadata')
@@ -32,8 +40,11 @@ export class MetadataManagementController {
     type: Metadata,
   })
   @ApiResponse({ status: 400, description: 'Bad request' })
-  async create(@Body() dto: CreateMetadataDto) {
-    return this.metadataManagementService.create(dto);
+  async create(@Body() dto: CreateMetadataDto, @CurrentUser() user: UserPlain) {
+    return this.metadataManagementService.create({
+      ...dto,
+      userId: user.id,
+    });
   }
 
   @Get()
@@ -43,8 +54,8 @@ export class MetadataManagementController {
     description: 'List of all metadata',
     type: [Metadata],
   })
-  async findAll() {
-    return this.metadataManagementService.findAll();
+  async findAll(@CurrentUser() user: UserPlain) {
+    return this.metadataManagementService.findAll(user);
   }
 
   @Get(':id')
@@ -56,7 +67,7 @@ export class MetadataManagementController {
     type: Metadata,
   })
   @ApiResponse({ status: 404, description: 'Metadata not found' })
-  async findOne(@Param('id') id: string) {
-    return this.metadataManagementService.findOne(id);
+  async findOne(@Param('id') id: string, @CurrentUser() user: UserPlain) {
+    return this.metadataManagementService.findOne(id, user);
   }
 }

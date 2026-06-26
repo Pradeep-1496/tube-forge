@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsString, IsOptional, IsIn } from 'class-validator';
+import { Visibility } from 'src/common/enums/visibility.enum';
 
 export class CreateBackgroundDto {
   @ApiProperty({ type: 'string', format: 'binary' })
@@ -20,4 +21,14 @@ export class CreateBackgroundDto {
   @IsOptional()
   @IsIn(['portrait', 'landscape'])
   type?: 'portrait' | 'landscape';
+
+  @ApiProperty({
+    enum: [Visibility.PUBLIC, Visibility.PRIVATE],
+    default: Visibility.PRIVATE,
+    description: 'Visibility of the background',
+    required: false,
+  })
+  @IsOptional()
+  @IsIn([Visibility.PUBLIC, Visibility.PRIVATE])
+  visibility?: Visibility;
 }

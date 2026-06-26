@@ -25,6 +25,14 @@ import { CreateBackgroundDto } from './dto/create-background.dto';
 import { Background } from 'src/common/models/background.model';
 import { RolesGuard } from 'src/common/guards/roles.guard';
 import { Roles } from 'src/common/decorators/roles.decorator';
+import { CurrentUser } from 'src/common/decorators/current-user.decorator';
+
+interface UserPlain {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+}
 
 @ApiTags('backgrounds')
 @Controller('backgrounds')
@@ -50,7 +58,9 @@ export class BackgroundManagementController {
   async upload(
     @UploadedFile() file: Express.Multer.File,
     @Body('name') name: string,
+    @CurrentUser() user: UserPlain,
     @Body('type') type?: string,
+    @Body('visibility') visibility?: string,
   ) {
     if (!name) {
       throw new BadRequestException('Name is required');
@@ -58,7 +68,9 @@ export class BackgroundManagementController {
     return this.backgroundManagementService.create(
       file,
       name,
+      user.id,
       type as 'portrait' | 'landscape',
+      visibility,
     );
   }
 
@@ -69,8 +81,8 @@ export class BackgroundManagementController {
     description: 'List of all backgrounds',
     type: [Background],
   })
-  async findAll() {
-    return this.backgroundManagementService.findAll();
+  async findAll(@CurrentUser() user: UserPlain) {
+    return this.backgroundManagementService.findAll(user);
   }
 
   @Get(':id')
@@ -82,8 +94,8 @@ export class BackgroundManagementController {
     type: Background,
   })
   @ApiResponse({ status: 404, description: 'Background not found' })
-  async findOne(@Param('id') id: string) {
-    return this.backgroundManagementService.findOne(id);
+  async findOne(@Param('id') id: string, @CurrentUser() user: UserPlain) {
+    return this.backgroundManagementService.findOne(id, user);
   }
 
   @Delete(':id')
@@ -91,8 +103,8 @@ export class BackgroundManagementController {
   @ApiParam({ name: 'id', description: 'Background ID' })
   @ApiResponse({ status: 200, description: 'Background deleted successfully' })
   @ApiResponse({ status: 404, description: 'Background not found' })
-  async remove(@Param('id') id: string) {
-    await this.backgroundManagementService.remove(id);
+  async remove(@Param('id') id: string, @CurrentUser() user: UserPlain) {
+    await this.backgroundManagementService.remove(id, user);
     return { message: 'Background deleted successfully' };
   }
 }

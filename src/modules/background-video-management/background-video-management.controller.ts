@@ -25,6 +25,14 @@ import { CreateBackgroundVideoDto } from './dto/create-background-video.dto';
 import { BackgroundVideo } from 'src/common/models/background-video.model';
 import { RolesGuard } from 'src/common/guards/roles.guard';
 import { Roles } from 'src/common/decorators/roles.decorator';
+import { CurrentUser } from 'src/common/decorators/current-user.decorator';
+
+interface UserPlain {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+}
 
 @ApiTags('background-videos')
 @Controller('background-videos')
@@ -50,7 +58,9 @@ export class BackgroundVideoManagementController {
   async upload(
     @UploadedFile() file: Express.Multer.File,
     @Body('name') name: string,
+    @CurrentUser() user: UserPlain,
     @Body('type') type?: string,
+    @Body('visibility') visibility?: string,
   ) {
     if (!name) {
       throw new BadRequestException('Name is required');
@@ -58,7 +68,9 @@ export class BackgroundVideoManagementController {
     return this.backgroundVideoManagementService.create(
       file,
       name,
+      user.id,
       type as 'portrait' | 'landscape',
+      visibility,
     );
   }
 
@@ -69,8 +81,8 @@ export class BackgroundVideoManagementController {
     description: 'List of all background videos',
     type: [BackgroundVideo],
   })
-  async findAll() {
-    return this.backgroundVideoManagementService.findAll();
+  async findAll(@CurrentUser() user: UserPlain) {
+    return this.backgroundVideoManagementService.findAll(user);
   }
 
   @Get(':id')
@@ -82,20 +94,17 @@ export class BackgroundVideoManagementController {
     type: BackgroundVideo,
   })
   @ApiResponse({ status: 404, description: 'Background video not found' })
-  async findOne(@Param('id') id: string) {
-    return this.backgroundVideoManagementService.findOne(id);
+  async findOne(@Param('id') id: string, @CurrentUser() user: UserPlain) {
+    return this.backgroundVideoManagementService.findOne(id, user);
   }
 
   @Delete(':id')
   @ApiOperation({ summary: 'Delete background video' })
   @ApiParam({ name: 'id', description: 'Background video ID' })
-  @ApiResponse({
-    status: 200,
-    description: 'Background video deleted successfully',
-  })
+  @ApiResponse({ status: 200, description: 'Background video deleted successfully' })
   @ApiResponse({ status: 404, description: 'Background video not found' })
-  async remove(@Param('id') id: string) {
-    await this.backgroundVideoManagementService.remove(id);
+  async remove(@Param('id') id: string, @CurrentUser() user: UserPlain) {
+    await this.backgroundVideoManagementService.remove(id, user);
     return { message: 'Background video deleted successfully' };
   }
 }

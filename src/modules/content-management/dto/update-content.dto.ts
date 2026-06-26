@@ -1,5 +1,6 @@
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { IsString, IsOptional, IsIn } from 'class-validator';
+import { Visibility } from 'src/common/enums/visibility.enum';
 
 export class UpdateContentDto {
   @ApiPropertyOptional({
@@ -26,4 +27,13 @@ export class UpdateContentDto {
   @IsOptional()
   @IsIn(['video', 'audio', 'image', 'text'])
   type?: string;
+
+  @ApiPropertyOptional({
+    enum: [Visibility.PUBLIC, Visibility.PRIVATE],
+    description: 'Visibility of the content',
+    required: false,
+  })
+  @IsOptional()
+  @IsIn([Visibility.PUBLIC, Visibility.PRIVATE])
+  visibility?: Visibility;
 }

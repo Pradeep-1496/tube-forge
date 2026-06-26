@@ -1,5 +1,7 @@
-import { Table, Column, Model, DataType } from 'sequelize-typescript';
+import { Table, Column, Model, DataType, BelongsTo, ForeignKey } from 'sequelize-typescript';
+import { User } from './user.model';
 import { BackgroundVideoType } from '../enums/background-video-type.enum';
+import { Visibility } from '../enums/visibility.enum';
 
 @Table({
   tableName: 'background_videos',
@@ -29,4 +31,28 @@ export class BackgroundVideo extends Model {
     defaultValue: BackgroundVideoType.PORTRAIT,
   })
   type!: BackgroundVideoType;
+
+  @ForeignKey(() => User)
+  @Column({
+    type: DataType.UUID,
+    allowNull: false,
+    references: {
+      model: 'users',
+      key: 'id',
+    },
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+  })
+  userId!: string;
+
+  @BelongsTo(() => User)
+  user!: User;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+    values: [Visibility.PUBLIC, Visibility.PRIVATE],
+    defaultValue: Visibility.PRIVATE,
+  })
+  visibility!: Visibility;
 }

@@ -2,6 +2,7 @@
   Injectable,
   NotFoundException,
   BadRequestException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { VideoContent } from '../../common/models/video-content.model';
 import { Background } from 'src/common/models/background.model';
@@ -24,6 +25,8 @@ import {
   BackgroundImageConfig,
 } from './services/background-image.provider';
 import { GenerateVideoDto } from './dto/generate-video.dto';
+import { Visibility } from 'src/common/enums/visibility.enum';
+import { Op } from 'sequelize';
 
 interface UserPlain {
   id: string;
@@ -42,16 +45,34 @@ export class VideoGenerationService {
     private readonly cerebrasService: CerebrasService,
   ) {}
 
-  async findAll(): Promise<VideoContent[]> {
-    return VideoContent.findAll();
+  private isAdmin(user: UserPlain): boolean {
+    return user.role === 'admin';
   }
 
-  async findOne(id: string): Promise<VideoContent> {
-    const metadata = await VideoContent.findByPk(id, { raw: true });
-    if (!metadata) {
+  async findAll(user: UserPlain): Promise<VideoContent[]> {
+    if (this.isAdmin(user)) {
+      return VideoContent.findAll({ order: [['created_at', 'DESC']] });
+    }
+    return VideoContent.findAll({
+      where: {
+        [Op.or]: [
+          { userId: user.id },
+          { visibility: Visibility.PUBLIC },
+        ],
+      },
+      order: [['created_at', 'DESC']],
+    });
+  }
+
+  async findOne(id: string, user: UserPlain): Promise<VideoContent> {
+    const record = await VideoContent.findByPk(id);
+    if (!record) {
       throw new NotFoundException(`VideoContent with ID ${id} not found`);
     }
-    return metadata;
+    if (!this.isAdmin(user) && record.userId !== user.id && record.visibility !== Visibility.PUBLIC) {
+      throw new ForbiddenException('You do not have access to this video content');
+    }
+    return record;
   }
 
   async generateVideo(
@@ -61,9 +82,12 @@ export class VideoGenerationService {
   ): Promise<{ outputPath: string; metadata: Metadata }> {
     await this.ensureUserHasChannel(user.id);
 
-    const contentRecord = await VideoContent.findByPk(id, { raw: true });
+    const contentRecord = await VideoContent.findByPk(id);
     if (!contentRecord) {
       throw new NotFoundException(`VideoContent with ID ${id} not found`);
+    }
+    if (!this.isAdmin(user) && contentRecord.userId !== user.id && contentRecord.visibility !== Visibility.PUBLIC) {
+      throw new ForbiddenException('You do not have access to this video content');
     }
 
     const { title, content } = contentRecord;
@@ -95,7 +119,7 @@ export class VideoGenerationService {
 
     const framePath = join(outputDir, `frame-${Date.now()}.png`);
 
-    const bgConfig = await this.buildBackgroundConfig(dto?.backgroundId);
+    const bgConfig = await this.buildBackgroundConfig(dto?.backgroundId, user);
     const html = this.htmlToImageService.buildVideoHtml(
       title,
       content,
@@ -113,18 +137,18 @@ export class VideoGenerationService {
 
     let preparedAudioPath: string | null = null;
     try {
-      const audioFilePath = await this.resolveAudioFilePath(dto?.audioId);
+      const audioFilePath = await this.resolveAudioFilePath(dto?.audioId, user);
       preparedAudioPath = await this.audioService.prepareAudio(audioFilePath);
 
       if (dto?.subscribeImageId) {
-        const subscribeImage = await SubscribeImage.findByPk(
-          dto.subscribeImageId,
-          { raw: true },
-        );
+        const subscribeImage = await SubscribeImage.findByPk(dto.subscribeImageId, { raw: true });
         if (!subscribeImage) {
           throw new NotFoundException(
             `Subscribe image with ID ${dto.subscribeImageId} not found`,
           );
+        }
+        if (!this.isAdmin(user) && subscribeImage.userId !== user.id && subscribeImage.visibility !== Visibility.PUBLIC) {
+          throw new ForbiddenException('You do not have access to this subscribe image');
         }
 
         const subscribeImgPath = join(process.cwd(), subscribeImage.path);
@@ -187,6 +211,7 @@ export class VideoGenerationService {
       dto.publishedDate,
       contentRecord.id,
       thumbnailPath,
+      user,
     );
 
     return { outputPath, metadata: storedMetadata };
@@ -204,13 +229,14 @@ export class VideoGenerationService {
   ): Promise<{ outputPath: string; metadata: Metadata }> {
     await this.ensureUserHasChannel(user.id);
 
-    const contentRecord = await VideoContent.findByPk(metadataId, {
-      raw: true,
-    });
+    const contentRecord = await VideoContent.findByPk(metadataId);
     if (!contentRecord) {
       throw new NotFoundException(
         `VideoContent with ID ${metadataId} not found`,
       );
+    }
+    if (!this.isAdmin(user) && contentRecord.userId !== user.id && contentRecord.visibility !== Visibility.PUBLIC) {
+      throw new ForbiddenException('You do not have access to this video content');
     }
 
     const { title, content } = contentRecord;
@@ -224,20 +250,21 @@ export class VideoGenerationService {
     }
 
     const channel = await Channel.findOne({
-      where: { channelId: channelId, userId: user.id },
+      where: { channelId, userId: user.id },
       raw: true,
     });
     if (!channel) {
       throw new NotFoundException(`Channel not found for ${channelId}`);
     }
 
-    const backgroundVideo = await BackgroundVideo.findByPk(backgroundVideoId, {
-      raw: true,
-    });
+    const backgroundVideo = await BackgroundVideo.findByPk(backgroundVideoId, { raw: true });
     if (!backgroundVideo) {
       throw new NotFoundException(
         `Background video with ID ${backgroundVideoId} not found`,
       );
+    }
+    if (!this.isAdmin(user) && backgroundVideo.userId !== user.id && backgroundVideo.visibility !== Visibility.PUBLIC) {
+      throw new ForbiddenException('You do not have access to this background video');
     }
 
     const backgroundVideoPath = join(process.cwd(), backgroundVideo.path);
@@ -275,17 +302,18 @@ export class VideoGenerationService {
 
     let preparedAudioPath: string | null = null;
     try {
-      const audioFilePath = await this.resolveAudioFilePath(audioId);
+      const audioFilePath = await this.resolveAudioFilePath(audioId, user);
       preparedAudioPath = await this.audioService.prepareAudio(audioFilePath);
 
       if (subscribeImageId) {
-        const subscribeImage = await SubscribeImage.findByPk(subscribeImageId, {
-          raw: true,
-        });
+        const subscribeImage = await SubscribeImage.findByPk(subscribeImageId, { raw: true });
         if (!subscribeImage) {
           throw new NotFoundException(
             `Subscribe image with ID ${subscribeImageId} not found`,
           );
+        }
+        if (!this.isAdmin(user) && subscribeImage.userId !== user.id && subscribeImage.visibility !== Visibility.PUBLIC) {
+          throw new ForbiddenException('You do not have access to this subscribe image');
         }
 
         const subscribeImgPath = join(process.cwd(), subscribeImage.path);
@@ -355,6 +383,7 @@ export class VideoGenerationService {
       publishedDate,
       contentRecord.id,
       thumbnailPath,
+      user,
     );
 
     return { outputPath, metadata: storedMetadata };
@@ -378,6 +407,7 @@ export class VideoGenerationService {
     publishedDate: string,
     contentId: string,
     thumbnailPath: string,
+    user: UserPlain,
   ): Promise<Metadata> {
     try {
       const aiMetadata = await this.cerebrasService.generateMetadata(
@@ -398,6 +428,8 @@ export class VideoGenerationService {
         category_id: aiMetadata.category_id,
         contentId,
         thumbnailPath,
+        userId: user.id,
+        visibility: Visibility.PRIVATE,
       });
     } catch (error) {
       console.error(
@@ -417,19 +449,25 @@ export class VideoGenerationService {
         publish_at: new Date(publishedDate),
         contentId,
         thumbnailPath,
+        userId: user.id,
+        visibility: Visibility.PRIVATE,
       });
     }
   }
 
   private async resolveAudioFilePath(
     audioId: string | undefined,
+    user: UserPlain,
   ): Promise<string | null> {
     if (!audioId) {
       return null;
     }
 
-    const audio = await Audio.findByPk(audioId, { raw: true });
+    const audio = await Audio.findByPk(audioId);
     if (!audio) {
+      return null;
+    }
+    if (!this.isAdmin(user) && audio.userId !== user.id && audio.visibility !== Visibility.PUBLIC) {
       return null;
     }
 
@@ -438,16 +476,20 @@ export class VideoGenerationService {
 
   private async buildBackgroundConfig(
     backgroundId?: string,
+    user?: UserPlain,
   ): Promise<BackgroundImageConfig> {
     if (!backgroundId) {
       return { enabled: false, opacity: 0.45 };
     }
 
-    const background = await Background.findByPk(backgroundId, { raw: true });
+    const background = await Background.findByPk(backgroundId);
     if (!background) {
       throw new NotFoundException(
         `Background with ID ${backgroundId} not found`,
       );
+    }
+    if (user && !this.isAdmin(user) && background.userId !== user.id && background.visibility !== Visibility.PUBLIC) {
+      throw new ForbiddenException('You do not have access to this background');
     }
 
     const fullPath = join(process.cwd(), background.path);
