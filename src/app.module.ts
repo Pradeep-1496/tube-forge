@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { CommonModule } from './common/common.module';
 import { DatabaseModule } from './database/database.module';
 import { VideoGenerationModule } from './modules/video-generation/video-generation.module';
 import { BackgroundManagementModule } from './modules/background-management/background-management.module';
@@ -13,8 +14,9 @@ import { AuthModule } from './modules/auth/auth.module';
 import { ChannelManagementModule } from './modules/channel-management/channel-management.module';
 
 @Module({
-imports: [
-    DatabaseModule,
+  imports: [
+      CommonModule,
+      DatabaseModule,
     AuthModule,
     ChannelManagementModule,
     VideoGenerationModule,
