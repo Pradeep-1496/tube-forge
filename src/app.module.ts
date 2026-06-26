@@ -10,11 +10,13 @@ import { SubscribeImageManagementModule } from './modules/subscribe-image-manage
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { AuthModule } from './modules/auth/auth.module';
+import { ChannelManagementModule } from './modules/channel-management/channel-management.module';
 
 @Module({
-  imports: [
+imports: [
     DatabaseModule,
     AuthModule,
+    ChannelManagementModule,
     VideoGenerationModule,
     BackgroundManagementModule,
     AudioManagementModule,

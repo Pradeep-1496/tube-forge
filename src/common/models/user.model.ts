@@ -6,7 +6,7 @@ import { UserRole } from '../enums/user-role.enum';
   timestamps: true,
   underscored: true,
 })
-export class Users extends Model {
+export class User extends Model {
   @Column({
     type: DataType.UUID,
     primaryKey: true,

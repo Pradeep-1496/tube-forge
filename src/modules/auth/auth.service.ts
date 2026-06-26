@@ -4,7 +4,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { Users } from 'src/common/models/user.model';
+import { User } from 'src/common/models/user.model';
 import { InjectModel } from '@nestjs/sequelize';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
@@ -13,7 +13,7 @@ import * as bcrypt from 'bcrypt';
 @Injectable()
 export class AuthService {
   constructor(
-    @InjectModel(Users) private readonly usersModel: typeof Users,
+    @InjectModel(User) private readonly usersModel: typeof User,
     private readonly jwtService: JwtService,
   ) {}
 

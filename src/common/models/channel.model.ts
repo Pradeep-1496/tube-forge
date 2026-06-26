@@ -6,7 +6,7 @@ import {
   BelongsTo,
   ForeignKey,
 } from 'sequelize-typescript';
-import { Users } from './user.model';
+import { User } from './user.model';
 
 @Table({
   tableName: 'youtube_channels',
@@ -64,7 +64,7 @@ export class Channel extends Model {
   })
   expiryDate!: number;
 
-  @ForeignKey(() => Users)
+  @ForeignKey(() => User)
   @Column({
     type: DataType.UUID,
     allowNull: false,
@@ -77,6 +77,6 @@ export class Channel extends Model {
   })
   userId!: string;
 
-  @BelongsTo(() => Users)
-  user!: Users;
+  @BelongsTo(() => User)
+  user!: User;
 }
