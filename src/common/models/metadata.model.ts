@@ -1,4 +1,5 @@
 import { Table, Column, Model, DataType } from 'sequelize-typescript';
+import { MetadataStatus } from '../enums/metadata-status.enum';
 
 @Table({
   tableName: 'metadata',
@@ -73,4 +74,53 @@ export class Metadata extends Model {
     allowNull: true,
   })
   output_video_path!: string;
+
+  @Column({
+    type: DataType.UUID,
+    allowNull: true,
+    references: {
+      model: 'youtube_channels',
+      key: 'id',
+    },
+    onDelete: 'SET NULL',
+    onUpdate: 'CASCADE',
+  })
+  channelId!: string;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: true,
+    defaultValue: MetadataStatus.DRAFT,
+  })
+  status!: MetadataStatus;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: true,
+  })
+  youtubeVideoId!: string;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: true,
+  })
+  youtubeUrl!: string;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: true,
+  })
+  thumbnailPath!: string;
+
+  @Column({
+    type: DataType.UUID,
+    allowNull: true,
+    references: {
+      model: 'video_content',
+      key: 'id',
+    },
+    onDelete: 'SET NULL',
+    onUpdate: 'CASCADE',
+  })
+  contentId!: string;
 }

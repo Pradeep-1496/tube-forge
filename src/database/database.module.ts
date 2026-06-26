@@ -7,6 +7,8 @@ import { Audio } from 'src/common/models/audio.model';
 import { BackgroundVideo } from 'src/common/models/background-video.model';
 import { Metadata } from 'src/common/models/metadata.model';
 import { SubscribeImage } from 'src/common/models/subscribe-image.model';
+import { Users } from 'src/common/models/user.model';
+import { Channel } from 'src/common/models/channel.model';
 
 @Module({
   imports: [
@@ -26,6 +28,8 @@ import { SubscribeImage } from 'src/common/models/subscribe-image.model';
         BackgroundVideo,
         Metadata,
         SubscribeImage,
+        Users,
+        Channel,
       ],
     }),
   ],
