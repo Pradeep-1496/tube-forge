@@ -79,9 +79,12 @@ export class VideoGenerationService {
       throw new BadRequestException('publishedDate is required');
     }
 
-    const channel = await Channel.findByPk(dto.channelId, { raw: true });
+    const channel = await Channel.findOne({
+      where: { channelId: dto.channelId, userId: user.id },
+      raw: true,
+    });
     if (!channel) {
-      throw new NotFoundException(`Channel with ID ${dto.channelId} not found`);
+      throw new NotFoundException(`Channel not found for ${dto.channelId}`);
     }
 
     const outputDir = join(process.cwd(), 'output-videos');
@@ -183,7 +186,7 @@ export class VideoGenerationService {
       content,
       filename,
       outputPath,
-      dto.channelId,
+      channel.id,
       dto.publishedDate,
     );
 
@@ -221,9 +224,12 @@ export class VideoGenerationService {
       throw new BadRequestException('publishedDate is required');
     }
 
-    const channel = await Channel.findByPk(channelId, { raw: true });
+    const channel = await Channel.findOne({
+      where: { channelId: channelId as string, userId: user.id },
+      raw: true,
+    });
     if (!channel) {
-      throw new NotFoundException(`Channel with ID ${channelId} not found`);
+      throw new NotFoundException(`Channel not found for ${channelId}`);
     }
 
     const backgroundVideo = await BackgroundVideo.findByPk(backgroundVideoId, {
@@ -346,7 +352,7 @@ export class VideoGenerationService {
       content,
       filename,
       outputPath,
-      channelId,
+      channel.id,
       publishedDate,
     );
 
@@ -367,7 +373,7 @@ export class VideoGenerationService {
     content: string,
     filename: string,
     outputPath: string,
-    channelId: string,
+    channelDbId: string,
     publishedDate: string,
   ): Promise<Metadata> {
     try {
@@ -384,7 +390,7 @@ export class VideoGenerationService {
         privacy_status: 'private',
         default_language: 'en',
         self_declared_made_for_kids: true,
-        channelId,
+        channelId: channelDbId,
         publish_at: new Date(publishedDate),
         category_id: aiMetadata.category_id,
       });
@@ -402,7 +408,7 @@ export class VideoGenerationService {
         privacy_status: 'private',
         default_language: 'en',
         self_declared_made_for_kids: true,
-        channelId,
+        channelId: channelDbId,
         publish_at: new Date(publishedDate),
       });
     }

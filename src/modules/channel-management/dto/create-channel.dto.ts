@@ -1,16 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsNotEmpty, IsUUID } from 'class-validator';
+import { IsString, IsNotEmpty } from 'class-validator';
 
 export class CreateChannelDto {
-  @ApiProperty({
-    example: '550e8400-e29b-41d4-a716-446655440000',
-    description: 'User ID who owns this channel',
-  })
-  @IsString()
-  @IsNotEmpty()
-  @IsUUID()
-  userId!: string;
-
   @ApiProperty({
     example: 'My YouTube Channel',
     description: 'Name of the YouTube channel',
