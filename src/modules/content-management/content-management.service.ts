@@ -11,6 +11,7 @@ export class ContentManagementService {
     title: string;
     content: string;
     type?: string;
+    userId: string;
   }): Promise<VideoContent> {
     if (!data.title || !data.content) {
       throw new BadRequestException('Title and content are required');

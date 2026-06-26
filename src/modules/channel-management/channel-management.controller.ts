@@ -6,6 +6,7 @@ import {
   Delete,
   Param,
   Body,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -13,14 +14,28 @@ import {
   ApiParam,
   ApiBody,
   ApiResponse,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
 import { ChannelManagementService } from './channel-management.service';
 import { CreateChannelDto } from './dto/create-channel.dto';
 import { UpdateChannelDto } from './dto/update-channel.dto';
 import { Channel } from 'src/common/models/channel.model';
+import { RolesGuard } from 'src/common/guards/roles.guard';
+import { Roles } from 'src/common/decorators/roles.decorator';
+import { CurrentUser } from 'src/common/decorators/current-user.decorator';
+
+interface UserPlain {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+}
 
 @ApiTags('channels')
 @Controller('channels')
+@UseGuards(RolesGuard)
+@Roles('user', 'admin')
+@ApiBearerAuth()
 export class ChannelManagementController {
   constructor(
     private readonly channelManagementService: ChannelManagementService,
@@ -35,8 +50,11 @@ export class ChannelManagementController {
     type: Channel,
   })
   @ApiResponse({ status: 400, description: 'Bad request' })
-  async create(@Body() dto: CreateChannelDto) {
-    return this.channelManagementService.create(dto);
+  async create(@CurrentUser() user: UserPlain, @Body() dto: CreateChannelDto) {
+    return this.channelManagementService.create({
+      ...dto,
+      userId: user.id,
+    });
   }
 
   @Get()
@@ -46,8 +64,8 @@ export class ChannelManagementController {
     description: 'List of channels',
     type: [Channel],
   })
-  async findAll() {
-    return this.channelManagementService.findAll();
+  async findAll(@CurrentUser() user: UserPlain) {
+    return this.channelManagementService.findAll(user.id);
   }
 
   @Get(':id')

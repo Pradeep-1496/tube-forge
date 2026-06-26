@@ -8,6 +8,7 @@ import {
   UseInterceptors,
   UploadedFile,
   BadRequestException,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -16,14 +17,20 @@ import {
   ApiBody,
   ApiConsumes,
   ApiResponse,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { BackgroundManagementService } from './background-management.service';
 import { CreateBackgroundDto } from './dto/create-background.dto';
 import { Background } from 'src/common/models/background.model';
+import { RolesGuard } from 'src/common/guards/roles.guard';
+import { Roles } from 'src/common/decorators/roles.decorator';
 
 @ApiTags('backgrounds')
 @Controller('backgrounds')
+@UseGuards(RolesGuard)
+@Roles('user', 'admin')
+@ApiBearerAuth()
 export class BackgroundManagementController {
   constructor(
     private readonly backgroundManagementService: BackgroundManagementService,

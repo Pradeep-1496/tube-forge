@@ -9,6 +9,7 @@ import {
   UseInterceptors,
   UploadedFile,
   BadRequestException,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -17,15 +18,21 @@ import {
   ApiBody,
   ApiConsumes,
   ApiResponse,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { SubscribeImageManagementService } from './subscribe-image-management.service';
 import { CreateSubscribeImageDto } from './dto/create-subscribe-image.dto';
 import { UpdateSubscribeImageDto } from './dto/update-subscribe-image.dto';
 import { SubscribeImage } from 'src/common/models/subscribe-image.model';
+import { RolesGuard } from 'src/common/guards/roles.guard';
+import { Roles } from 'src/common/decorators/roles.decorator';
 
 @ApiTags('subscribe-images')
 @Controller('subscribe-images')
+@UseGuards(RolesGuard)
+@Roles('user', 'admin')
+@ApiBearerAuth()
 export class SubscribeImageManagementController {
   constructor(
     private readonly subscribeImageManagementService: SubscribeImageManagementService,

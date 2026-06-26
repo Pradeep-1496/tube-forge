@@ -8,6 +8,7 @@ import {
   UseInterceptors,
   UploadedFile,
   BadRequestException,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -16,14 +17,20 @@ import {
   ApiBody,
   ApiConsumes,
   ApiResponse,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { AudioManagementService } from './audio-management.service';
 import { CreateAudioDto } from './dto/create-audio.dto';
 import { Audio } from 'src/common/models/audio.model';
+import { RolesGuard } from 'src/common/guards/roles.guard';
+import { Roles } from 'src/common/decorators/roles.decorator';
 
 @ApiTags('audios')
 @Controller('audios')
+@UseGuards(RolesGuard)
+@Roles('user', 'admin')
+@ApiBearerAuth()
 export class AudioManagementController {
   constructor(
     private readonly audioManagementService: AudioManagementService,

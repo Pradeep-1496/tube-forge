@@ -1,10 +1,15 @@
-﻿import { Injectable, NotFoundException } from '@nestjs/common';
+﻿import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { VideoContent } from '../../common/models/video-content.model';
-import { Background } from '../../common/models/background.model';
-import { BackgroundVideo } from '../../common/models/background-video.model';
-import { Audio } from '../../common/models/audio.model';
+import { Background } from 'src/common/models/background.model';
+import { BackgroundVideo } from 'src/common/models/background-video.model';
+import { Audio } from 'src/common/models/audio.model';
 import { SubscribeImage } from 'src/common/models/subscribe-image.model';
 import { Metadata } from 'src/common/models/metadata.model';
+import { Channel } from 'src/common/models/channel.model';
 import { CerebrasService } from 'src/common/services/cerebras.service';
 import { join } from 'path';
 import {
@@ -22,6 +27,13 @@ import {
   BackgroundImageConfig,
 } from './services/background-image.provider';
 import { GenerateVideoDto } from './dto/generate-video.dto';
+
+interface UserPlain {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+}
 
 @Injectable()
 export class VideoGenerationService {
@@ -46,15 +58,31 @@ export class VideoGenerationService {
   }
 
   async generateVideo(
+    user: UserPlain,
     id: string,
     dto?: GenerateVideoDto,
   ): Promise<{ outputPath: string; metadata: Metadata }> {
+    await this.ensureUserHasChannel(user.id);
+
     const contentRecord = await VideoContent.findByPk(id, { raw: true });
     if (!contentRecord) {
       throw new NotFoundException(`VideoContent with ID ${id} not found`);
     }
 
     const { title, content } = contentRecord;
+
+    if (!dto?.channelId) {
+      throw new BadRequestException('channelId is required');
+    }
+
+    if (!dto?.publishedDate) {
+      throw new BadRequestException('publishedDate is required');
+    }
+
+    const channel = await Channel.findByPk(dto.channelId, { raw: true });
+    if (!channel) {
+      throw new NotFoundException(`Channel with ID ${dto.channelId} not found`);
+    }
 
     const outputDir = join(process.cwd(), 'output-videos');
     const thumbnailDir = join(process.cwd(), 'thumbnail');
@@ -155,18 +183,25 @@ export class VideoGenerationService {
       content,
       filename,
       outputPath,
+      dto.channelId,
+      dto.publishedDate,
     );
 
     return { outputPath, metadata: storedMetadata };
   }
 
   async generateVideoFromBackgroundVideo(
+    user: UserPlain,
     metadataId: string,
     backgroundVideoId: string,
     audioId?: string,
     theme?: string,
     subscribeImageId?: string,
+    channelId?: string,
+    publishedDate?: string,
   ): Promise<{ outputPath: string; metadata: Metadata }> {
+    await this.ensureUserHasChannel(user.id);
+
     const contentRecord = await VideoContent.findByPk(metadataId, {
       raw: true,
     });
@@ -177,6 +212,19 @@ export class VideoGenerationService {
     }
 
     const { title, content } = contentRecord;
+
+    if (!channelId) {
+      throw new BadRequestException('channelId is required');
+    }
+
+    if (!publishedDate) {
+      throw new BadRequestException('publishedDate is required');
+    }
+
+    const channel = await Channel.findByPk(channelId, { raw: true });
+    if (!channel) {
+      throw new NotFoundException(`Channel with ID ${channelId} not found`);
+    }
 
     const backgroundVideo = await BackgroundVideo.findByPk(backgroundVideoId, {
       raw: true,
@@ -298,9 +346,20 @@ export class VideoGenerationService {
       content,
       filename,
       outputPath,
+      channelId,
+      publishedDate,
     );
 
     return { outputPath, metadata: storedMetadata };
+  }
+
+  private async ensureUserHasChannel(userId: string): Promise<void> {
+    const channels = await Channel.findAll({ where: { userId } });
+    if (!channels || channels.length === 0) {
+      throw new BadRequestException(
+        'You must create a YouTube channel before generating videos',
+      );
+    }
   }
 
   private async generateAndStoreMetadata(
@@ -308,6 +367,8 @@ export class VideoGenerationService {
     content: string,
     filename: string,
     outputPath: string,
+    channelId: string,
+    publishedDate: string,
   ): Promise<Metadata> {
     try {
       const aiMetadata = await this.cerebrasService.generateMetadata(
@@ -323,6 +384,9 @@ export class VideoGenerationService {
         privacy_status: 'private',
         default_language: 'en',
         self_declared_made_for_kids: true,
+        channelId,
+        publish_at: new Date(publishedDate),
+        category_id: aiMetadata.category_id,
       });
     } catch (error) {
       console.error(
@@ -338,6 +402,8 @@ export class VideoGenerationService {
         privacy_status: 'private',
         default_language: 'en',
         self_declared_made_for_kids: true,
+        channelId,
+        publish_at: new Date(publishedDate),
       });
     }
   }

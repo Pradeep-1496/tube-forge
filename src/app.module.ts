@@ -15,8 +15,8 @@ import { ChannelManagementModule } from './modules/channel-management/channel-ma
 
 @Module({
   imports: [
-      CommonModule,
-      DatabaseModule,
+    CommonModule,
+    DatabaseModule,
     AuthModule,
     ChannelManagementModule,
     VideoGenerationModule,

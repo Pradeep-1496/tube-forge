@@ -127,7 +127,6 @@ export class SubscribeImageManagementService {
         unlinkSync(fullPath);
       }
 
-      const ext = this.getExtension(data.file.originalname);
       const sanitizedName = this.sanitizeFilename(
         data.name || subscribeImage.name,
       );

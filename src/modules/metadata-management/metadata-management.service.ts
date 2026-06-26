@@ -15,11 +15,20 @@ export class MetadataManagementService {
     category_id?: string;
     default_language?: string;
     privacy_status?: string;
-    publish_at?: Date;
+    publish_at: string;
     self_declared_made_for_kids?: boolean;
+    channelId: string;
   }): Promise<Metadata> {
     if (!data.title) {
       throw new BadRequestException('Title is required');
+    }
+
+    if (!data.publish_at) {
+      throw new BadRequestException('publish_at is required');
+    }
+
+    if (!data.channelId) {
+      throw new BadRequestException('channelId is required');
     }
 
     return Metadata.create({
@@ -30,8 +39,9 @@ export class MetadataManagementService {
       category_id: data.category_id,
       default_language: data.default_language,
       privacy_status: data.privacy_status,
-      publish_at: data.publish_at,
+      publish_at: new Date(data.publish_at),
       self_declared_made_for_kids: data.self_declared_made_for_kids ?? false,
+      channelId: data.channelId,
     });
   }
 

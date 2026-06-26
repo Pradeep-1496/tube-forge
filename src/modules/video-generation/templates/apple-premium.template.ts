@@ -10,7 +10,7 @@ function bgStyle(bg?: BackgroundImageConfig): string {
 export function ApplePremium(
   title: string,
   content: string,
-  isFirstFrame: boolean = false,
+  _isFirstFrame: boolean = false,
   bg?: BackgroundImageConfig,
 ) {
   const bgCss = bgStyle(bg);

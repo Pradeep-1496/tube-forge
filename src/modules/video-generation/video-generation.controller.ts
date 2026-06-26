@@ -1,17 +1,31 @@
-import { Controller, Param, Post, Body, Get } from '@nestjs/common';
+import { Controller, Param, Post, Body, Get, UseGuards } from '@nestjs/common';
 import {
   ApiTags,
   ApiOperation,
   ApiParam,
   ApiBody,
   ApiResponse,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
 import { VideoGenerationService } from './video-generation.service';
 import { GenerateVideoDto } from './dto/generate-video.dto';
 import { GenerateFromVideoDto } from './dto/generate-from-video.dto';
+import { RolesGuard } from 'src/common/guards/roles.guard';
+import { Roles } from 'src/common/decorators/roles.decorator';
+import { CurrentUser } from 'src/common/decorators/current-user.decorator';
+
+interface UserPlain {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+}
 
 @ApiTags('video-generation')
 @Controller('video-generation')
+@UseGuards(RolesGuard)
+@Roles('user', 'admin')
+@ApiBearerAuth()
 export class VideoGenerationController {
   constructor(
     private readonly videoGenerationService: VideoGenerationService,
@@ -41,8 +55,12 @@ export class VideoGenerationController {
     description: 'VideoContent ID to generate video from',
   })
   @ApiBody({ type: GenerateVideoDto })
-  generateVideo(@Param('id') id: string, @Body() dto: GenerateVideoDto) {
-    return this.videoGenerationService.generateVideo(id, dto);
+  generateVideo(
+    @CurrentUser() user: UserPlain,
+    @Param('id') id: string,
+    @Body() dto: GenerateVideoDto,
+  ) {
+    return this.videoGenerationService.generateVideo(user, id, dto);
   }
 
   @Post('generate-from-video/:videoContentId/:backgroundVideoId')
@@ -60,16 +78,20 @@ export class VideoGenerationController {
   })
   @ApiBody({ type: GenerateFromVideoDto })
   generateVideoFromBackgroundVideo(
+    @CurrentUser() user: UserPlain,
     @Param('videoContentId') videoContentId: string,
     @Param('backgroundVideoId') backgroundVideoId: string,
     @Body() dto: GenerateFromVideoDto,
   ) {
     return this.videoGenerationService.generateVideoFromBackgroundVideo(
+      user,
       videoContentId,
       backgroundVideoId,
       dto?.audioId,
       dto?.theme,
       dto?.subscribeImageId,
+      dto?.channelId,
+      dto?.publishedDate,
     );
   }
 

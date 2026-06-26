@@ -6,6 +6,7 @@ import {
   Delete,
   Param,
   Body,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -13,14 +14,28 @@ import {
   ApiParam,
   ApiBody,
   ApiResponse,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
 import { ContentManagementService } from './content-management.service';
 import { CreateContentDto } from './dto/create-content.dto';
 import { UpdateContentDto } from './dto/update-content.dto';
 import { VideoContent } from 'src/common/models/video-content.model';
+import { RolesGuard } from 'src/common/guards/roles.guard';
+import { Roles } from 'src/common/decorators/roles.decorator';
+import { CurrentUser } from 'src/common/decorators/current-user.decorator';
+
+interface UserPlain {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+}
 
 @ApiTags('content')
 @Controller('content')
+@UseGuards(RolesGuard)
+@Roles('user', 'admin')
+@ApiBearerAuth()
 export class ContentManagementController {
   constructor(
     private readonly contentManagementService: ContentManagementService,
@@ -35,8 +50,11 @@ export class ContentManagementController {
     type: VideoContent,
   })
   @ApiResponse({ status: 400, description: 'Bad request' })
-  async create(@Body() dto: CreateContentDto) {
-    return this.contentManagementService.create(dto);
+  async create(@CurrentUser() user: UserPlain, @Body() dto: CreateContentDto) {
+    return this.contentManagementService.create({
+      ...dto,
+      userId: user.id,
+    });
   }
 
   @Get()

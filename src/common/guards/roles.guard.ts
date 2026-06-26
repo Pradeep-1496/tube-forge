@@ -30,9 +30,6 @@ export class RolesGuard implements CanActivate {
       'roles',
       context.getHandler(),
     );
-    if (!requiredRoles || requiredRoles.length === 0) {
-      return true;
-    }
 
     const request = context.switchToHttp().getRequest<Request>();
     const token = this.extractToken(request);
@@ -57,10 +54,14 @@ export class RolesGuard implements CanActivate {
       }
 
       const plainUser = user.get({ plain: true }) as unknown as UserPlain;
-      request.user = plainUser as unknown as Record<string, string>;
+      request.user = plainUser;
 
-      if (!requiredRoles.includes(plainUser.role)) {
-        throw new ForbiddenException('Access denied: insufficient permissions');
+      if (requiredRoles && requiredRoles.length > 0) {
+        if (!requiredRoles.includes(plainUser.role)) {
+          throw new ForbiddenException(
+            'Access denied: insufficient permissions',
+          );
+        }
       }
 
       return true;

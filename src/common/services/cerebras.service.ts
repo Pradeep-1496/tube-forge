@@ -11,7 +11,7 @@ Analyze the provided content and generate metadata designed to maximize:
 
 === CRITICAL RULES ===
 1. Return ONLY a valid JSON object. No markdown, no code fences, no extra text before or after the JSON.
-2. The JSON must contain exactly these three top-level keys: title, description, tags.
+2. The JSON must contain exactly these four top-level keys: title, description, tags, category_id.
 3. Do not include any comments, explanations, or trailing commas.
 
 === FIELD SPECIFICATIONS ===
@@ -34,6 +34,11 @@ tags:
 - Maximum 3 words per tag
 - All lowercase, no spaces within single tags
 
+category_id:
+- A YouTube category ID from 1 to 44 that best matches the content topic
+- Return only the numeric ID as a string
+- Choose the most relevant category for the content
+
 
 `;
 
@@ -41,6 +46,7 @@ interface CerebrasMetadata {
   title: string;
   description: string;
   tags: string[];
+  category_id?: string;
 }
 
 @Injectable()
@@ -103,6 +109,8 @@ export class CerebrasService {
       title: parsed.title,
       description: parsed.description,
       tags,
+      category_id:
+        typeof parsed.category_id === 'string' ? parsed.category_id : undefined,
     };
   }
 }

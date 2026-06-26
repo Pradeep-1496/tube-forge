@@ -1,17 +1,23 @@
-import { Controller, Get, Post, Param, Body } from '@nestjs/common';
+import { Controller, Get, Post, Param, Body, UseGuards } from '@nestjs/common';
 import {
   ApiTags,
   ApiOperation,
   ApiParam,
   ApiBody,
   ApiResponse,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
 import { MetadataManagementService } from './metadata-management.service';
 import { CreateMetadataDto } from './dto/create-metadata.dto';
 import { Metadata } from 'src/common/models/metadata.model';
+import { RolesGuard } from 'src/common/guards/roles.guard';
+import { Roles } from 'src/common/decorators/roles.decorator';
 
 @ApiTags('metadata')
 @Controller('metadata')
+@UseGuards(RolesGuard)
+@Roles('user', 'admin')
+@ApiBearerAuth()
 export class MetadataManagementController {
   constructor(
     private readonly metadataManagementService: MetadataManagementService,

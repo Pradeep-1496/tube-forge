@@ -8,6 +8,7 @@ import {
   UseInterceptors,
   UploadedFile,
   BadRequestException,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -16,14 +17,20 @@ import {
   ApiBody,
   ApiConsumes,
   ApiResponse,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { BackgroundVideoManagementService } from './background-video-management.service';
 import { CreateBackgroundVideoDto } from './dto/create-background-video.dto';
 import { BackgroundVideo } from 'src/common/models/background-video.model';
+import { RolesGuard } from 'src/common/guards/roles.guard';
+import { Roles } from 'src/common/decorators/roles.decorator';
 
 @ApiTags('background-videos')
 @Controller('background-videos')
+@UseGuards(RolesGuard)
+@Roles('user', 'admin')
+@ApiBearerAuth()
 export class BackgroundVideoManagementController {
   constructor(
     private readonly backgroundVideoManagementService: BackgroundVideoManagementService,

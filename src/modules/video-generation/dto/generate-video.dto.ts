@@ -1,5 +1,5 @@
-import { ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsOptional } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsString, IsOptional, IsDateString } from 'class-validator';
 
 export class GenerateVideoDto {
   @ApiPropertyOptional({
@@ -45,4 +45,18 @@ export class GenerateVideoDto {
   @IsOptional()
   @IsString()
   subscribeImageId?: string;
+
+  @ApiProperty({
+    description: 'YouTube channel ID to associate with this video',
+    example: 'UCXuqSBlHAE6Xw-yeJA0Tunw',
+  })
+  @IsString()
+  channelId!: string;
+
+  @ApiProperty({
+    description: 'Published date for the video in ISO format',
+    example: '2026-06-26T12:00:00Z',
+  })
+  @IsDateString()
+  publishedDate!: string;
 }

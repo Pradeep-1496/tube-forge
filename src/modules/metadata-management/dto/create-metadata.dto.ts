@@ -5,6 +5,7 @@ import {
   IsBoolean,
   IsArray,
   IsDateString,
+  IsNotEmpty,
 } from 'class-validator';
 
 export class CreateMetadataDto {
@@ -13,6 +14,7 @@ export class CreateMetadataDto {
     description: 'Title for the metadata',
   })
   @IsString()
+  @IsNotEmpty()
   title!: string;
 
   @ApiProperty({
@@ -46,7 +48,7 @@ export class CreateMetadataDto {
 
   @ApiProperty({
     example: '22',
-    description: 'Category ID',
+    description: 'Category ID (YouTube category 1-44)',
     required: false,
   })
   @IsOptional()
@@ -74,11 +76,10 @@ export class CreateMetadataDto {
   @ApiProperty({
     example: '2025-08-01T10:00:00Z',
     description: 'Publish date and time in ISO format',
-    required: false,
+    required: true,
   })
-  @IsOptional()
   @IsDateString()
-  publish_at?: Date;
+  publish_at!: string;
 
   @ApiProperty({
     example: false,
@@ -88,4 +89,13 @@ export class CreateMetadataDto {
   @IsOptional()
   @IsBoolean()
   self_declared_made_for_kids?: boolean;
+
+  @ApiProperty({
+    example: 'UCXuqSBlHAE6Xw-yeJA0Tunw',
+    description: 'YouTube channel ID',
+    required: true,
+  })
+  @IsString()
+  @IsNotEmpty()
+  channelId!: string;
 }
