@@ -49,31 +49,6 @@ export class VideoGenerationService {
     return user.role === 'admin';
   }
 
-  async findAll(user: UserPlain): Promise<VideoContent[]> {
-    if (this.isAdmin(user)) {
-      return VideoContent.findAll({ order: [['created_at', 'DESC']] });
-    }
-    return VideoContent.findAll({
-      where: {
-        [Op.or]: [
-          { userId: user.id },
-          { visibility: Visibility.PUBLIC },
-        ],
-      },
-      order: [['created_at', 'DESC']],
-    });
-  }
-
-  async findOne(id: string, user: UserPlain): Promise<VideoContent> {
-    const record = await VideoContent.findByPk(id);
-    if (!record) {
-      throw new NotFoundException(`VideoContent with ID ${id} not found`);
-    }
-    if (!this.isAdmin(user) && record.userId !== user.id && record.visibility !== Visibility.PUBLIC) {
-      throw new ForbiddenException('You do not have access to this video content');
-    }
-    return record;
-  }
 
   async generateVideo(
     user: UserPlain,
