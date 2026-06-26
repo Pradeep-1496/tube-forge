@@ -103,22 +103,28 @@ export class SubscribeImageManagementService {
     }
     return SubscribeImage.findAll({
       where: {
-        [Op.or]: [
-          { userId: user.id },
-          { visibility: Visibility.PUBLIC },
-        ],
+        [Op.or]: [{ userId: user.id }, { visibility: Visibility.PUBLIC }],
       },
       order: [['created_at', 'DESC']],
     });
   }
 
-  async findOne(id: string, user: { id: string; role: string }): Promise<SubscribeImage> {
+  async findOne(
+    id: string,
+    user: { id: string; role: string },
+  ): Promise<SubscribeImage> {
     const subscribeImage = await SubscribeImage.findByPk(id);
     if (!subscribeImage) {
       throw new NotFoundException(`Subscribe image with ID ${id} not found`);
     }
-    if (!this.isAdmin(user) && subscribeImage.userId !== user.id && subscribeImage.visibility !== Visibility.PUBLIC) {
-      throw new ForbiddenException('You do not have access to this subscribe image');
+    if (
+      !this.isAdmin(user) &&
+      subscribeImage.userId !== user.id &&
+      subscribeImage.visibility !== Visibility.PUBLIC
+    ) {
+      throw new ForbiddenException(
+        'You do not have access to this subscribe image',
+      );
     }
     return subscribeImage;
   }
@@ -138,7 +144,9 @@ export class SubscribeImageManagementService {
       throw new NotFoundException(`Subscribe image with ID ${id} not found`);
     }
     if (!this.isAdmin(user) && subscribeImage.userId !== user.id) {
-      throw new ForbiddenException('You do not have permission to update this subscribe image');
+      throw new ForbiddenException(
+        'You do not have permission to update this subscribe image',
+      );
     }
 
     const updatePayload: Record<string, string | number> = {};
@@ -213,7 +221,9 @@ export class SubscribeImageManagementService {
       throw new NotFoundException(`Subscribe image with ID ${id} not found`);
     }
     if (!this.isAdmin(user) && subscribeImage.userId !== user.id) {
-      throw new ForbiddenException('You do not have permission to delete this subscribe image');
+      throw new ForbiddenException(
+        'You do not have permission to delete this subscribe image',
+      );
     }
 
     const fullPath = join(process.cwd(), subscribeImage.path);

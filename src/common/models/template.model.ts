@@ -7,15 +7,14 @@ import {
   ForeignKey,
 } from 'sequelize-typescript';
 import { User } from './user.model';
-import { BackgroundType } from '../enums/bg-type.enum';
 import { Visibility } from '../enums/visibility.enum';
 
 @Table({
-  tableName: 'backgrounds',
+  tableName: 'templates',
   timestamps: true,
   underscored: true,
 })
-export class Background extends Model {
+export class Template extends Model {
   @Column({
     type: DataType.UUID,
     primaryKey: true,
@@ -23,21 +22,32 @@ export class Background extends Model {
   })
   declare id: string;
 
-  @Column({ type: DataType.STRING })
+  @Column({
+    type: DataType.STRING,
+    allowNull: false,
+    unique: true,
+  })
   name!: string;
 
-  @Column({ type: DataType.STRING })
-  path!: string;
+  @Column({
+    type: DataType.TEXT,
+    allowNull: true,
+  })
+  description!: string;
 
-  @Column({ type: DataType.INTEGER })
-  size!: number;
+  @Column({
+    type: DataType.TEXT,
+    allowNull: true,
+  })
+  code!: string;
 
   @Column({
     type: DataType.STRING,
-    values: ['portrait', 'landscape'],
-    defaultValue: BackgroundType.PORTRAIT,
+    allowNull: false,
+    values: [Visibility.PUBLIC, Visibility.PRIVATE],
+    defaultValue: Visibility.PRIVATE,
   })
-  type!: BackgroundType;
+  visibility!: Visibility;
 
   @ForeignKey(() => User)
   @Column({
@@ -54,12 +64,4 @@ export class Background extends Model {
 
   @BelongsTo(() => User)
   user!: User;
-
-  @Column({
-    type: DataType.STRING,
-    allowNull: false,
-    values: [Visibility.PUBLIC, Visibility.PRIVATE],
-    defaultValue: Visibility.PRIVATE,
-  })
-  visibility!: Visibility;
 }

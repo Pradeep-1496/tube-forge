@@ -39,21 +39,25 @@ export class ContentManagementService {
     }
     return VideoContent.findAll({
       where: {
-        [Op.or]: [
-          { userId: user.id },
-          { visibility: Visibility.PUBLIC },
-        ],
+        [Op.or]: [{ userId: user.id }, { visibility: Visibility.PUBLIC }],
       },
       order: [['created_at', 'DESC']],
     });
   }
 
-  async findOne(id: string, user: { id: string; role: string }): Promise<VideoContent> {
+  async findOne(
+    id: string,
+    user: { id: string; role: string },
+  ): Promise<VideoContent> {
     const record = await VideoContent.findByPk(id);
     if (!record) {
       throw new NotFoundException(`Content with ID ${id} not found`);
     }
-    if (!this.isAdmin(user) && record.userId !== user.id && record.visibility !== Visibility.PUBLIC) {
+    if (
+      !this.isAdmin(user) &&
+      record.userId !== user.id &&
+      record.visibility !== Visibility.PUBLIC
+    ) {
       throw new ForbiddenException('You do not have access to this content');
     }
     return record;
@@ -61,7 +65,12 @@ export class ContentManagementService {
 
   async update(
     id: string,
-    data: { title?: string; content?: string; type?: string; visibility?: Visibility },
+    data: {
+      title?: string;
+      content?: string;
+      type?: string;
+      visibility?: Visibility;
+    },
     user: { id: string; role: string },
   ): Promise<VideoContent> {
     const record = await VideoContent.findByPk(id);
@@ -69,7 +78,9 @@ export class ContentManagementService {
       throw new NotFoundException(`Content with ID ${id} not found`);
     }
     if (!this.isAdmin(user) && record.userId !== user.id) {
-      throw new ForbiddenException('You do not have permission to update this content');
+      throw new ForbiddenException(
+        'You do not have permission to update this content',
+      );
     }
     await record.update(data);
     return record;
@@ -81,7 +92,9 @@ export class ContentManagementService {
       throw new NotFoundException(`Content with ID ${id} not found`);
     }
     if (!this.isAdmin(user) && record.userId !== user.id) {
-      throw new ForbiddenException('You do not have permission to delete this content');
+      throw new ForbiddenException(
+        'You do not have permission to delete this content',
+      );
     }
     await record.destroy();
   }

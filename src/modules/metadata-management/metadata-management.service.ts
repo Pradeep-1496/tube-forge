@@ -64,21 +64,25 @@ export class MetadataManagementService {
     }
     return Metadata.findAll({
       where: {
-        [Op.or]: [
-          { userId: user.id },
-          { visibility: Visibility.PUBLIC },
-        ],
+        [Op.or]: [{ userId: user.id }, { visibility: Visibility.PUBLIC }],
       },
       order: [['created_at', 'DESC']],
     });
   }
 
-  async findOne(id: string, user: { id: string; role: string }): Promise<Metadata> {
+  async findOne(
+    id: string,
+    user: { id: string; role: string },
+  ): Promise<Metadata> {
     const metadata = await Metadata.findByPk(id);
     if (!metadata) {
       throw new NotFoundException(`Metadata with ID ${id} not found`);
     }
-    if (!this.isAdmin(user) && metadata.userId !== user.id && metadata.visibility !== Visibility.PUBLIC) {
+    if (
+      !this.isAdmin(user) &&
+      metadata.userId !== user.id &&
+      metadata.visibility !== Visibility.PUBLIC
+    ) {
       throw new ForbiddenException('You do not have access to this metadata');
     }
     return metadata;

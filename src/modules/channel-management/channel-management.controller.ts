@@ -91,7 +91,11 @@ export class ChannelManagementController {
     type: Channel,
   })
   @ApiResponse({ status: 404, description: 'Channel not found' })
-  async update(@Param('id') id: string, @Body() dto: UpdateChannelDto, @CurrentUser() user: UserPlain) {
+  async update(
+    @Param('id') id: string,
+    @Body() dto: UpdateChannelDto,
+    @CurrentUser() user: UserPlain,
+  ) {
     return this.channelManagementService.update(id, dto, user);
   }
 

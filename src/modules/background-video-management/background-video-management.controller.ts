@@ -101,7 +101,10 @@ export class BackgroundVideoManagementController {
   @Delete(':id')
   @ApiOperation({ summary: 'Delete background video' })
   @ApiParam({ name: 'id', description: 'Background video ID' })
-  @ApiResponse({ status: 200, description: 'Background video deleted successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Background video deleted successfully',
+  })
   @ApiResponse({ status: 404, description: 'Background video not found' })
   async remove(@Param('id') id: string, @CurrentUser() user: UserPlain) {
     await this.backgroundVideoManagementService.remove(id, user);

@@ -110,21 +110,25 @@ export class BackgroundManagementService {
     }
     return Background.findAll({
       where: {
-        [Op.or]: [
-          { userId: user.id },
-          { visibility: Visibility.PUBLIC },
-        ],
+        [Op.or]: [{ userId: user.id }, { visibility: Visibility.PUBLIC }],
       },
       order: [['created_at', 'DESC']],
     });
   }
 
-  async findOne(id: string, user: { id: string; role: string }): Promise<Background> {
+  async findOne(
+    id: string,
+    user: { id: string; role: string },
+  ): Promise<Background> {
     const background = await Background.findByPk(id);
     if (!background) {
       throw new NotFoundException(`Background with ID ${id} not found`);
     }
-    if (!this.isAdmin(user) && background.userId !== user.id && background.visibility !== Visibility.PUBLIC) {
+    if (
+      !this.isAdmin(user) &&
+      background.userId !== user.id &&
+      background.visibility !== Visibility.PUBLIC
+    ) {
       throw new ForbiddenException('You do not have access to this background');
     }
     return background;
@@ -136,7 +140,9 @@ export class BackgroundManagementService {
       throw new NotFoundException(`Background with ID ${id} not found`);
     }
     if (!this.isAdmin(user) && background.userId !== user.id) {
-      throw new ForbiddenException('You do not have permission to delete this background');
+      throw new ForbiddenException(
+        'You do not have permission to delete this background',
+      );
     }
 
     const fullPath = join(process.cwd(), background.path);

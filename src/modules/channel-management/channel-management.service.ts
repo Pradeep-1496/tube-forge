@@ -48,7 +48,10 @@ export class ChannelManagementService {
     });
   }
 
-  async findOne(id: string, user: { id: string; role: string }): Promise<Channel> {
+  async findOne(
+    id: string,
+    user: { id: string; role: string },
+  ): Promise<Channel> {
     const record = await Channel.findByPk(id);
     if (!record) {
       throw new NotFoundException(`Channel with ID ${id} not found`);
@@ -77,7 +80,9 @@ export class ChannelManagementService {
       throw new NotFoundException(`Channel with ID ${id} not found`);
     }
     if (!this.isAdmin(user) && record.userId !== user.id) {
-      throw new ForbiddenException('You do not have permission to update this channel');
+      throw new ForbiddenException(
+        'You do not have permission to update this channel',
+      );
     }
     await record.update(data);
     return record;
@@ -89,7 +94,9 @@ export class ChannelManagementService {
       throw new NotFoundException(`Channel with ID ${id} not found`);
     }
     if (!this.isAdmin(user) && record.userId !== user.id) {
-      throw new ForbiddenException('You do not have permission to delete this channel');
+      throw new ForbiddenException(
+        'You do not have permission to delete this channel',
+      );
     }
     await record.destroy();
   }

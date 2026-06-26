@@ -9,6 +9,7 @@ import { Metadata } from 'src/common/models/metadata.model';
 import { SubscribeImage } from 'src/common/models/subscribe-image.model';
 import { User } from 'src/common/models/user.model';
 import { Channel } from 'src/common/models/channel.model';
+import { Template } from 'src/common/models/template.model';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { Channel } from 'src/common/models/channel.model';
         SubscribeImage,
         User,
         Channel,
+        Template,
       ],
     }),
   ],

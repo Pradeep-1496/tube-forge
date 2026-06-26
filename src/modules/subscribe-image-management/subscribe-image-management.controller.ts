@@ -120,18 +120,25 @@ export class SubscribeImageManagementController {
     @Body('type') type?: string,
     @Body('visibility') visibility?: string,
   ) {
-    return this.subscribeImageManagementService.update(id, {
-      file,
-      name,
-      type: type as 'portrait' | 'landscape' | undefined,
-      visibility,
-    }, user);
+    return this.subscribeImageManagementService.update(
+      id,
+      {
+        file,
+        name,
+        type: type as 'portrait' | 'landscape' | undefined,
+        visibility,
+      },
+      user,
+    );
   }
 
   @Delete(':id')
   @ApiOperation({ summary: 'Delete subscribe image' })
   @ApiParam({ name: 'id', description: 'Subscribe image ID' })
-  @ApiResponse({ status: 200, description: 'Subscribe image deleted successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Subscribe image deleted successfully',
+  })
   @ApiResponse({ status: 404, description: 'Subscribe image not found' })
   async remove(@Param('id') id: string, @CurrentUser() user: UserPlain) {
     await this.subscribeImageManagementService.remove(id, user);

@@ -91,7 +91,11 @@ export class ContentManagementController {
     type: VideoContent,
   })
   @ApiResponse({ status: 404, description: 'Content not found' })
-  async update(@Param('id') id: string, @Body() dto: UpdateContentDto, @CurrentUser() user: UserPlain) {
+  async update(
+    @Param('id') id: string,
+    @Body() dto: UpdateContentDto,
+    @CurrentUser() user: UserPlain,
+  ) {
     return this.contentManagementService.update(id, dto, user);
   }
 

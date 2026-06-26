@@ -49,7 +49,6 @@ export class VideoGenerationService {
     return user.role === 'admin';
   }
 
-
   async generateVideo(
     user: UserPlain,
     id: string,
@@ -61,8 +60,14 @@ export class VideoGenerationService {
     if (!contentRecord) {
       throw new NotFoundException(`VideoContent with ID ${id} not found`);
     }
-    if (!this.isAdmin(user) && contentRecord.userId !== user.id && contentRecord.visibility !== Visibility.PUBLIC) {
-      throw new ForbiddenException('You do not have access to this video content');
+    if (
+      !this.isAdmin(user) &&
+      contentRecord.userId !== user.id &&
+      contentRecord.visibility !== Visibility.PUBLIC
+    ) {
+      throw new ForbiddenException(
+        'You do not have access to this video content',
+      );
     }
 
     const { title, content } = contentRecord;
@@ -116,14 +121,23 @@ export class VideoGenerationService {
       preparedAudioPath = await this.audioService.prepareAudio(audioFilePath);
 
       if (dto?.subscribeImageId) {
-        const subscribeImage = await SubscribeImage.findByPk(dto.subscribeImageId, { raw: true });
+        const subscribeImage = await SubscribeImage.findByPk(
+          dto.subscribeImageId,
+          { raw: true },
+        );
         if (!subscribeImage) {
           throw new NotFoundException(
             `Subscribe image with ID ${dto.subscribeImageId} not found`,
           );
         }
-        if (!this.isAdmin(user) && subscribeImage.userId !== user.id && subscribeImage.visibility !== Visibility.PUBLIC) {
-          throw new ForbiddenException('You do not have access to this subscribe image');
+        if (
+          !this.isAdmin(user) &&
+          subscribeImage.userId !== user.id &&
+          subscribeImage.visibility !== Visibility.PUBLIC
+        ) {
+          throw new ForbiddenException(
+            'You do not have access to this subscribe image',
+          );
         }
 
         const subscribeImgPath = join(process.cwd(), subscribeImage.path);
@@ -210,8 +224,14 @@ export class VideoGenerationService {
         `VideoContent with ID ${metadataId} not found`,
       );
     }
-    if (!this.isAdmin(user) && contentRecord.userId !== user.id && contentRecord.visibility !== Visibility.PUBLIC) {
-      throw new ForbiddenException('You do not have access to this video content');
+    if (
+      !this.isAdmin(user) &&
+      contentRecord.userId !== user.id &&
+      contentRecord.visibility !== Visibility.PUBLIC
+    ) {
+      throw new ForbiddenException(
+        'You do not have access to this video content',
+      );
     }
 
     const { title, content } = contentRecord;
@@ -232,14 +252,22 @@ export class VideoGenerationService {
       throw new NotFoundException(`Channel not found for ${channelId}`);
     }
 
-    const backgroundVideo = await BackgroundVideo.findByPk(backgroundVideoId, { raw: true });
+    const backgroundVideo = await BackgroundVideo.findByPk(backgroundVideoId, {
+      raw: true,
+    });
     if (!backgroundVideo) {
       throw new NotFoundException(
         `Background video with ID ${backgroundVideoId} not found`,
       );
     }
-    if (!this.isAdmin(user) && backgroundVideo.userId !== user.id && backgroundVideo.visibility !== Visibility.PUBLIC) {
-      throw new ForbiddenException('You do not have access to this background video');
+    if (
+      !this.isAdmin(user) &&
+      backgroundVideo.userId !== user.id &&
+      backgroundVideo.visibility !== Visibility.PUBLIC
+    ) {
+      throw new ForbiddenException(
+        'You do not have access to this background video',
+      );
     }
 
     const backgroundVideoPath = join(process.cwd(), backgroundVideo.path);
@@ -281,14 +309,22 @@ export class VideoGenerationService {
       preparedAudioPath = await this.audioService.prepareAudio(audioFilePath);
 
       if (subscribeImageId) {
-        const subscribeImage = await SubscribeImage.findByPk(subscribeImageId, { raw: true });
+        const subscribeImage = await SubscribeImage.findByPk(subscribeImageId, {
+          raw: true,
+        });
         if (!subscribeImage) {
           throw new NotFoundException(
             `Subscribe image with ID ${subscribeImageId} not found`,
           );
         }
-        if (!this.isAdmin(user) && subscribeImage.userId !== user.id && subscribeImage.visibility !== Visibility.PUBLIC) {
-          throw new ForbiddenException('You do not have access to this subscribe image');
+        if (
+          !this.isAdmin(user) &&
+          subscribeImage.userId !== user.id &&
+          subscribeImage.visibility !== Visibility.PUBLIC
+        ) {
+          throw new ForbiddenException(
+            'You do not have access to this subscribe image',
+          );
         }
 
         const subscribeImgPath = join(process.cwd(), subscribeImage.path);
@@ -442,7 +478,11 @@ export class VideoGenerationService {
     if (!audio) {
       return null;
     }
-    if (!this.isAdmin(user) && audio.userId !== user.id && audio.visibility !== Visibility.PUBLIC) {
+    if (
+      !this.isAdmin(user) &&
+      audio.userId !== user.id &&
+      audio.visibility !== Visibility.PUBLIC
+    ) {
       return null;
     }
 
@@ -463,7 +503,12 @@ export class VideoGenerationService {
         `Background with ID ${backgroundId} not found`,
       );
     }
-    if (user && !this.isAdmin(user) && background.userId !== user.id && background.visibility !== Visibility.PUBLIC) {
+    if (
+      user &&
+      !this.isAdmin(user) &&
+      background.userId !== user.id &&
+      background.visibility !== Visibility.PUBLIC
+    ) {
       throw new ForbiddenException('You do not have access to this background');
     }
 
