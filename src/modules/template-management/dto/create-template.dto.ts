@@ -20,7 +20,8 @@ export class CreateTemplateDto {
   description?: string;
 
   @ApiProperty({
-    example: '<html lang="en"><head> <title>title</title></head><body></body></html>',
+    example:
+      '<html lang="en"><head> <title>title</title></head><body></body></html>',
     description: 'Template code content',
     required: false,
   })

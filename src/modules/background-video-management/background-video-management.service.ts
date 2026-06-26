@@ -118,8 +118,8 @@ export class BackgroundVideoManagementService {
     }
     if (
       !this.isAdmin(user) &&
-      backgroundVideo.userId !== user.id &&
-      backgroundVideo.visibility !== Visibility.PUBLIC
+      backgroundVideo.dataValues.userId !== user.id &&
+      backgroundVideo.dataValues.visibility !== Visibility.PUBLIC
     ) {
       throw new ForbiddenException(
         'You do not have access to this background video',
@@ -133,18 +133,25 @@ export class BackgroundVideoManagementService {
     if (!backgroundVideo) {
       throw new NotFoundException(`Background video with ID ${id} not found`);
     }
-    if (!this.isAdmin(user) && backgroundVideo.userId !== user.id) {
+    if (!this.isAdmin(user) && backgroundVideo.dataValues.userId !== user.id) {
       throw new ForbiddenException(
         'You do not have permission to delete this background video',
       );
     }
 
-    const fullPath = join(process.cwd(), backgroundVideo.path);
+    const fullPath = join(process.cwd(), backgroundVideo.dataValues.path);
+    const t = await BackgroundVideo.sequelize!.transaction();
+    try {
+      await backgroundVideo.destroy({ transaction: t });
+      await t.commit();
+    } catch (error) {
+      await t.rollback();
+      throw error;
+    }
+
     if (existsSync(fullPath)) {
       unlinkSync(fullPath);
     }
-
-    await backgroundVideo.destroy();
   }
 
   private async transcodeToPortrait(

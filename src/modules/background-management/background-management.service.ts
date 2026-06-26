@@ -126,8 +126,8 @@ export class BackgroundManagementService {
     }
     if (
       !this.isAdmin(user) &&
-      background.userId !== user.id &&
-      background.visibility !== Visibility.PUBLIC
+      background.dataValues.userId !== user.id &&
+      background.dataValues.visibility !== Visibility.PUBLIC
     ) {
       throw new ForbiddenException('You do not have access to this background');
     }
@@ -139,18 +139,25 @@ export class BackgroundManagementService {
     if (!background) {
       throw new NotFoundException(`Background with ID ${id} not found`);
     }
-    if (!this.isAdmin(user) && background.userId !== user.id) {
+    if (!this.isAdmin(user) && background.dataValues.userId !== user.id) {
       throw new ForbiddenException(
         'You do not have permission to delete this background',
       );
     }
 
-    const fullPath = join(process.cwd(), background.path);
+    const fullPath = join(process.cwd(), background.dataValues.path);
+    const t = await Background.sequelize!.transaction();
+    try {
+      await background.destroy({ transaction: t });
+      await t.commit();
+    } catch (error) {
+      await t.rollback();
+      throw error;
+    }
+
     if (existsSync(fullPath)) {
       unlinkSync(fullPath);
     }
-
-    await background.destroy();
   }
 
   private sanitizeFilename(name: string): string {

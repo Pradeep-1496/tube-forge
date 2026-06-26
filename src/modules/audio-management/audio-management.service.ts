@@ -77,8 +77,8 @@ export class AudioManagementService {
     }
     if (
       !this.isAdmin(user) &&
-      audio.userId !== user.id &&
-      audio.visibility !== Visibility.PUBLIC
+      audio.dataValues.userId !== user.id &&
+      audio.dataValues.visibility !== Visibility.PUBLIC
     ) {
       throw new ForbiddenException('You do not have access to this audio');
     }
@@ -93,18 +93,25 @@ export class AudioManagementService {
     if (!audio) {
       throw new NotFoundException(`Audio with ID ${audioId} not found`);
     }
-    if (!this.isAdmin(user) && audio.userId !== user.id) {
+    if (!this.isAdmin(user) && audio.dataValues.userId !== user.id) {
       throw new ForbiddenException(
         'You do not have permission to delete this audio',
       );
     }
 
-    const fullPath = join(process.cwd(), audio.path);
+    const fullPath = join(process.cwd(), audio.dataValues.path);
+    const t = await Audio.sequelize!.transaction();
+    try {
+      await audio.destroy({ transaction: t });
+      await t.commit();
+    } catch (error) {
+      await t.rollback();
+      throw error;
+    }
+
     if (existsSync(fullPath)) {
       unlinkSync(fullPath);
     }
-
-    await audio.destroy();
   }
 
   private getAudioDuration(filePath: string): Promise<number | null> {

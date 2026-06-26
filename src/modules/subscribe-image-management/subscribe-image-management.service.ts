@@ -119,8 +119,8 @@ export class SubscribeImageManagementService {
     }
     if (
       !this.isAdmin(user) &&
-      subscribeImage.userId !== user.id &&
-      subscribeImage.visibility !== Visibility.PUBLIC
+      subscribeImage.dataValues.userId !== user.id &&
+      subscribeImage.dataValues.visibility !== Visibility.PUBLIC
     ) {
       throw new ForbiddenException(
         'You do not have access to this subscribe image',
@@ -143,7 +143,7 @@ export class SubscribeImageManagementService {
     if (!subscribeImage) {
       throw new NotFoundException(`Subscribe image with ID ${id} not found`);
     }
-    if (!this.isAdmin(user) && subscribeImage.userId !== user.id) {
+    if (!this.isAdmin(user) && subscribeImage.dataValues.userId !== user.id) {
       throw new ForbiddenException(
         'You do not have permission to update this subscribe image',
       );
@@ -164,16 +164,16 @@ export class SubscribeImageManagementService {
     }
 
     if (data.file) {
-      const fullPath = join(process.cwd(), subscribeImage.path);
+      const fullPath = join(process.cwd(), subscribeImage.dataValues.path);
       if (existsSync(fullPath)) {
         unlinkSync(fullPath);
       }
 
       const sanitizedName = this.sanitizeFilename(
-        data.name || subscribeImage.name,
+        data.name || subscribeImage.dataValues.name,
       );
 
-      const imageType = data.type || subscribeImage.type;
+      const imageType = data.type || subscribeImage.dataValues.type;
       const targetDir =
         imageType === 'landscape' ? this.LANDSCAPE_DIR : this.PORTRAIT_DIR;
       if (!existsSync(targetDir)) {
@@ -220,18 +220,25 @@ export class SubscribeImageManagementService {
     if (!subscribeImage) {
       throw new NotFoundException(`Subscribe image with ID ${id} not found`);
     }
-    if (!this.isAdmin(user) && subscribeImage.userId !== user.id) {
+    if (!this.isAdmin(user) && subscribeImage.dataValues.userId !== user.id) {
       throw new ForbiddenException(
         'You do not have permission to delete this subscribe image',
       );
     }
 
-    const fullPath = join(process.cwd(), subscribeImage.path);
+    const fullPath = join(process.cwd(), subscribeImage.dataValues.path);
+    const t = await SubscribeImage.sequelize!.transaction();
+    try {
+      await subscribeImage.destroy({ transaction: t });
+      await t.commit();
+    } catch (error) {
+      await t.rollback();
+      throw error;
+    }
+
     if (existsSync(fullPath)) {
       unlinkSync(fullPath);
     }
-
-    await subscribeImage.destroy();
   }
 
   private sanitizeFilename(name: string): string {
