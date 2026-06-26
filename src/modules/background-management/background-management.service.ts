@@ -47,8 +47,6 @@ export class BackgroundManagementService {
           : BackgroundType.PORTRAIT;
     }
 
-    
-
     const targetDir =
       imageType === BackgroundType.LANDSCAPE
         ? this.LANDSCAPE_DIR

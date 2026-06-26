@@ -9,10 +9,12 @@ import { MetadataManagementModule } from './modules/metadata-management/metadata
 import { SubscribeImageManagementModule } from './modules/subscribe-image-management/subscribe-image-management.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { AuthModule } from './modules/auth/auth.module';
 
 @Module({
   imports: [
     DatabaseModule,
+    AuthModule,
     VideoGenerationModule,
     BackgroundManagementModule,
     AudioManagementModule,
@@ -38,7 +40,6 @@ import { join } from 'path';
         serveRoot: '/assets/bg_videos/portrait',
       },
 
-      
       {
         rootPath: join(process.cwd(), 'assets', 'subscribe-images', 'portrait'),
         serveRoot: '/assets/subscribe-images/portrait',
