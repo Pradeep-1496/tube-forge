@@ -12,13 +12,10 @@ import { Metadata } from 'src/common/models/metadata.model';
 import { Channel } from 'src/common/models/channel.model';
 import { CerebrasService } from 'src/common/services/cerebras.service';
 import { join } from 'path';
-import {
-  existsSync,
-  mkdirSync,
-  copyFileSync,
-  unlinkSync,
-  readFileSync,
-} from 'fs';
+import { existsSync, mkdirSync, unlinkSync, readFileSync } from 'fs';
+import { exec } from 'child_process';
+import { promisify } from 'util';
+const execAsync = promisify(exec);
 import { HtmlToImageService } from './services/html-to-image.service';
 import { ImageToVideoService } from './services/image-to-video.service';
 import { AudioService } from './services/audio.service';
@@ -112,11 +109,7 @@ export class VideoGenerationService {
     const datePart = now.toISOString().slice(0, 10);
     const timePart = Date.now();
     const filename = `${datePart}-${timePart}.mp4`;
-    const thumbnailFilename = `${datePart}-${timePart}.png`;
     const outputPath = join(outputDir, filename);
-    const thumbnailPath = join(thumbnailDir, thumbnailFilename);
-
-    copyFileSync(framePath, thumbnailPath);
 
     let preparedAudioPath: string | null = null;
     try {
@@ -181,6 +174,10 @@ export class VideoGenerationService {
 
     unlinkSync(framePath);
 
+    const thumbnailFilename = `${datePart}-${timePart}.png`;
+    const thumbnailPath = join(thumbnailDir, thumbnailFilename);
+    await this.generateThumbnailFromVideo(outputPath, thumbnailPath);
+
     const storedMetadata = await this.generateAndStoreMetadata(
       title,
       content,
@@ -189,6 +186,7 @@ export class VideoGenerationService {
       channel.id,
       dto.publishedDate,
       contentRecord.id,
+      thumbnailPath,
     );
 
     return { outputPath, metadata: storedMetadata };
@@ -273,11 +271,7 @@ export class VideoGenerationService {
     const datePart = now.toISOString().slice(0, 10);
     const timePart = Date.now();
     const filename = `${datePart}-${timePart}.mp4`;
-    const thumbnailFilename = `${datePart}-${timePart}.png`;
     const outputPath = join(outputDir, filename);
-    const thumbnailPath = join(thumbnailDir, thumbnailFilename);
-
-    copyFileSync(overlayPath, thumbnailPath);
 
     let preparedAudioPath: string | null = null;
     try {
@@ -348,6 +342,10 @@ export class VideoGenerationService {
       }
     }
 
+    const thumbnailFilename = `${datePart}-${timePart}.png`;
+    const thumbnailPath = join(thumbnailDir, thumbnailFilename);
+    await this.generateThumbnailFromVideo(outputPath, thumbnailPath);
+
     const storedMetadata = await this.generateAndStoreMetadata(
       title,
       content,
@@ -356,6 +354,7 @@ export class VideoGenerationService {
       channel.id,
       publishedDate,
       contentRecord.id,
+      thumbnailPath,
     );
 
     return { outputPath, metadata: storedMetadata };
@@ -378,6 +377,7 @@ export class VideoGenerationService {
     channelDbId: string,
     publishedDate: string,
     contentId: string,
+    thumbnailPath: string,
   ): Promise<Metadata> {
     try {
       const aiMetadata = await this.cerebrasService.generateMetadata(
@@ -397,6 +397,7 @@ export class VideoGenerationService {
         publish_at: new Date(publishedDate),
         category_id: aiMetadata.category_id,
         contentId,
+        thumbnailPath,
       });
     } catch (error) {
       console.error(
@@ -415,6 +416,7 @@ export class VideoGenerationService {
         channelId: channelDbId,
         publish_at: new Date(publishedDate),
         contentId,
+        thumbnailPath,
       });
     }
   }
@@ -477,6 +479,15 @@ export class VideoGenerationService {
     } catch {
       /* ignore */
     }
+  }
+
+  private async generateThumbnailFromVideo(
+    videoPath: string,
+    thumbnailPath: string,
+  ): Promise<void> {
+    await execAsync(
+      `ffmpeg -ss 00:00:01 -i "${videoPath}" -vframes 1 -q:v 2 "${thumbnailPath}" -y`,
+    );
   }
 
   getAvailableThemes(): string[] {
