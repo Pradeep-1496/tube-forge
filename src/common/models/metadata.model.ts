@@ -67,4 +67,10 @@ export class Metadata extends Model {
     defaultValue: false,
   })
   self_declared_made_for_kids!: boolean;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: true,
+  })
+  output_video_path!: string;
 }

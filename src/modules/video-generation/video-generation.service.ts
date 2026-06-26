@@ -154,6 +154,7 @@ export class VideoGenerationService {
       title,
       content,
       filename,
+      outputPath,
     );
 
     return { outputPath, metadata: storedMetadata };
@@ -296,6 +297,7 @@ export class VideoGenerationService {
       title,
       content,
       filename,
+      outputPath,
     );
 
     return { outputPath, metadata: storedMetadata };
@@ -305,6 +307,7 @@ export class VideoGenerationService {
     title: string,
     content: string,
     filename: string,
+    outputPath: string,
   ): Promise<Metadata> {
     try {
       const aiMetadata = await this.cerebrasService.generateMetadata(
@@ -316,6 +319,7 @@ export class VideoGenerationService {
         description: aiMetadata.description,
         tags: aiMetadata.tags,
         file_name: filename,
+        output_video_path: outputPath,
         privacy_status: 'private',
         default_language: 'en',
         self_declared_made_for_kids: true,
@@ -330,6 +334,7 @@ export class VideoGenerationService {
         description: '',
         tags: [],
         file_name: filename,
+        output_video_path: outputPath,
         privacy_status: 'private',
         default_language: 'en',
         self_declared_made_for_kids: true,

@@ -23,7 +23,7 @@ import { join } from 'path';
     ServeStaticModule.forRoot(
       {
         rootPath: join(process.cwd(), 'output-videos'),
-        serveRoot: '/generate',
+        serveRoot: '/output-videos',
       },
       {
         rootPath: join(process.cwd(), 'assets', 'audios'),
