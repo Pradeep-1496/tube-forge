@@ -57,13 +57,27 @@ export class BackgroundManagementService {
       mkdirSync(targetDir, { recursive: true });
     }
 
+    let processedBuffer: Buffer;
+    let outputExt: string;
+
+    if (imageType === BackgroundType.PORTRAIT) {
+      processedBuffer = await sharp(file.buffer)
+        .resize(1080, 1920, { fit: 'cover' })
+        .jpeg({ quality: 90 })
+        .toBuffer();
+      outputExt = 'jpg';
+    } else {
+      processedBuffer = file.buffer;
+      outputExt = ext;
+    }
+
     const finalName = this.getUniqueFilename(
       targetDir,
-      `${sanitizedName}.${ext}`,
+      `${sanitizedName}.${outputExt}`,
     );
     const targetPath = join(targetDir, finalName);
 
-    writeFileSync(targetPath, file.buffer);
+    writeFileSync(targetPath, processedBuffer);
 
     const fileStat = statSync(targetPath);
     const sizeInBytes = fileStat.size;
