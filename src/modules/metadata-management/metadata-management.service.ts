@@ -18,6 +18,7 @@ export class MetadataManagementService {
     publish_at: string;
     self_declared_made_for_kids?: boolean;
     channelId: string;
+    contentId?: string;
   }): Promise<Metadata> {
     if (!data.title) {
       throw new BadRequestException('Title is required');
@@ -42,6 +43,7 @@ export class MetadataManagementService {
       publish_at: new Date(data.publish_at),
       self_declared_made_for_kids: data.self_declared_made_for_kids ?? false,
       channelId: data.channelId,
+      contentId: data.contentId,
     });
   }
 

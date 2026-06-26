@@ -188,6 +188,7 @@ export class VideoGenerationService {
       outputPath,
       channel.id,
       dto.publishedDate,
+      contentRecord.id,
     );
 
     return { outputPath, metadata: storedMetadata };
@@ -225,7 +226,7 @@ export class VideoGenerationService {
     }
 
     const channel = await Channel.findOne({
-      where: { channelId: channelId as string, userId: user.id },
+      where: { channelId: channelId, userId: user.id },
       raw: true,
     });
     if (!channel) {
@@ -354,6 +355,7 @@ export class VideoGenerationService {
       outputPath,
       channel.id,
       publishedDate,
+      contentRecord.id,
     );
 
     return { outputPath, metadata: storedMetadata };
@@ -375,6 +377,7 @@ export class VideoGenerationService {
     outputPath: string,
     channelDbId: string,
     publishedDate: string,
+    contentId: string,
   ): Promise<Metadata> {
     try {
       const aiMetadata = await this.cerebrasService.generateMetadata(
@@ -393,6 +396,7 @@ export class VideoGenerationService {
         channelId: channelDbId,
         publish_at: new Date(publishedDate),
         category_id: aiMetadata.category_id,
+        contentId,
       });
     } catch (error) {
       console.error(
@@ -410,6 +414,7 @@ export class VideoGenerationService {
         self_declared_made_for_kids: true,
         channelId: channelDbId,
         publish_at: new Date(publishedDate),
+        contentId,
       });
     }
   }

@@ -98,4 +98,13 @@ export class CreateMetadataDto {
   @IsString()
   @IsNotEmpty()
   channelId!: string;
+
+  @ApiProperty({
+    example: 'bbccce9c-64e9-491e-a94d-63fc6318218d',
+    description: 'Video content ID to associate this metadata with',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  contentId?: string;
 }
