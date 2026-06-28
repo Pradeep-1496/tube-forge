@@ -13,6 +13,7 @@ import { join } from 'path';
 import { AuthModule } from './modules/auth/auth.module';
 import { ChannelManagementModule } from './modules/channel-management/channel-management.module';
 import { TemplateManagementModule } from './modules/template-management/template-management.module';
+import { AppController } from './app.controller';
 
 @Module({
   imports: [
@@ -52,7 +53,7 @@ import { TemplateManagementModule } from './modules/template-management/template
       },
     ),
   ],
-  controllers: [],
+  controllers: [AppController],
   providers: [],
 })
 export class AppModule {}

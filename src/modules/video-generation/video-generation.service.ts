@@ -479,7 +479,9 @@ export class VideoGenerationService {
       return null;
     }
 
-    const audio = await Audio.findByPk(audioId);
+    const audio = await Audio.findByPk(audioId, {
+      raw: true,
+    });
     if (!audio) {
       return null;
     }
