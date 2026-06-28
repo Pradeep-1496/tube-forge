@@ -43,6 +43,10 @@ import { AppController } from './app.controller';
         serveRoot: '/assets/backgrounds/portrait',
       },
       {
+        rootPath: join(process.cwd(), 'assets', 'backgrounds', 'landscape'),
+        serveRoot: '/assets/backgrounds/landscape',
+      },
+      {
         rootPath: join(process.cwd(), 'assets', 'bg_videos', 'portrait'),
         serveRoot: '/assets/bg_videos/portrait',
       },
