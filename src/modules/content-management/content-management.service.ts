@@ -7,6 +7,7 @@ import {
 import { VideoContent } from 'src/common/models/video-content.model';
 import { Visibility } from 'src/common/enums/visibility.enum';
 import { Op } from 'sequelize';
+import { User } from 'src/common/models/user.model';
 
 @Injectable()
 export class ContentManagementService {
@@ -35,13 +36,16 @@ export class ContentManagementService {
 
   async findAll(user: { id: string; role: string }): Promise<VideoContent[]> {
     if (this.isAdmin(user)) {
-      return VideoContent.findAll({ order: [['created_at', 'DESC']] });
+      return VideoContent.findAll({ order: [['created_at', 'DESC']],
+        include: [{ model: User, attributes: ['name'] }],
+       });
     }
     return VideoContent.findAll({
       where: {
         [Op.or]: [{ userId: user.id }, { visibility: Visibility.PUBLIC }],
       },
       order: [['created_at', 'DESC']],
+      include: [{ model: User, attributes: ['name'] }],
     });
   }
 
