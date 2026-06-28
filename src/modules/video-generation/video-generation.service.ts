@@ -56,7 +56,9 @@ export class VideoGenerationService {
   ): Promise<{ outputPath: string; metadata: Metadata }> {
     await this.ensureUserHasChannel(user.id);
 
-    const contentRecord = await VideoContent.findByPk(id);
+    const contentRecord = await VideoContent.findByPk(id, {
+      raw: true,
+    });
     if (!contentRecord) {
       throw new NotFoundException(`VideoContent with ID ${id} not found`);
     }
@@ -218,12 +220,15 @@ export class VideoGenerationService {
   ): Promise<{ outputPath: string; metadata: Metadata }> {
     await this.ensureUserHasChannel(user.id);
 
-    const contentRecord = await VideoContent.findByPk(metadataId);
+    const contentRecord = await VideoContent.findByPk(metadataId, {
+      raw: true,
+    });
     if (!contentRecord) {
       throw new NotFoundException(
         `VideoContent with ID ${metadataId} not found`,
       );
     }
+
     if (
       !this.isAdmin(user) &&
       contentRecord.userId !== user.id &&
