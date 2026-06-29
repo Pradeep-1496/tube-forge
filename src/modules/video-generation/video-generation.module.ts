@@ -10,10 +10,11 @@ import { BackgroundImageProvider } from './services/background-image.provider';
 import { CerebrasService } from 'src/common/services/cerebras.service';
 import { Channel } from 'src/common/models/channel.model';
 import { User } from 'src/common/models/user.model';
+import { Template } from 'src/common/models/template.model';
 
 @Module({
   imports: [
-    SequelizeModule.forFeature([Channel]),
+    SequelizeModule.forFeature([Channel, Template]),
     SequelizeModule.forFeature([User]),
     CommonModule,
   ],

@@ -4,12 +4,12 @@ import {
   ApiOperation,
   ApiParam,
   ApiBody,
-  ApiResponse,
   ApiBearerAuth,
 } from '@nestjs/swagger';
 import { VideoGenerationService } from './video-generation.service';
 import { GenerateVideoDto } from './dto/generate-video.dto';
 import { GenerateFromVideoDto } from './dto/generate-from-video.dto';
+import { GenerateVideoFromTemplateDto } from './dto/generate-video-from-template.dto';
 import { RolesGuard } from 'src/common/guards/roles.guard';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
@@ -78,6 +78,28 @@ export class VideoGenerationController {
       dto?.subscribeImageId,
       dto?.channelId,
       dto?.publishedDate,
+    );
+  }
+
+  @Post('generate-from-template/:templateId')
+  @ApiOperation({
+    summary:
+      'Generate a 15-second video from a template ID by injecting custom content into {{content}} (supports background image or video + audio)',
+  })
+  @ApiParam({
+    name: 'templateId',
+    description: 'Template ID to generate video from',
+  })
+  @ApiBody({ type: GenerateVideoFromTemplateDto })
+  generateVideoFromTemplate(
+    @CurrentUser() user: UserPlain,
+    @Param('templateId') templateId: string,
+    @Body() dto: GenerateVideoFromTemplateDto,
+  ) {
+    return this.videoGenerationService.generateVideoFromTemplate(
+      user,
+      templateId,
+      dto,
     );
   }
 

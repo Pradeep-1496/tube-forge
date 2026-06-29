@@ -10,6 +10,7 @@ import { BackgroundVideo } from 'src/common/models/background-video.model';
 import { Audio } from 'src/common/models/audio.model';
 import { SubscribeImage } from 'src/common/models/subscribe-image.model';
 import { Metadata } from 'src/common/models/metadata.model';
+import { Template } from 'src/common/models/template.model';
 import { Channel } from 'src/common/models/channel.model';
 import { CerebrasService } from 'src/common/services/cerebras.service';
 import { join, relative } from 'path';
@@ -25,8 +26,8 @@ import {
   BackgroundImageConfig,
 } from './services/background-image.provider';
 import { GenerateVideoDto } from './dto/generate-video.dto';
+import { GenerateVideoFromTemplateDto } from './dto/generate-video-from-template.dto';
 import { Visibility } from 'src/common/enums/visibility.enum';
-import { Op } from 'sequelize';
 
 interface UserPlain {
   id: string;
@@ -405,6 +406,287 @@ export class VideoGenerationService {
     return { outputPath, metadata: storedMetadata };
   }
 
+  async generateVideoFromTemplate(
+    user: UserPlain,
+    templateId: string,
+    dto: GenerateVideoFromTemplateDto,
+  ): Promise<{ outputPath: string; metadata: Metadata }> {
+    await this.ensureUserHasChannel(user.id);
+
+    const template = await Template.findByPk(templateId, {
+      raw: true,  
+    });
+    if (!template) {
+      throw new NotFoundException(`Template with ID ${templateId} not found`);
+    }
+    if (
+      !this.isAdmin(user) &&
+      template.userId !== user.id &&
+      template.visibility !== Visibility.PUBLIC
+    ) {
+      throw new ForbiddenException('You do not have access to this template');
+    }
+
+    const title = dto.title || template.name;
+    const content = dto.content;
+
+    if (!dto.channelId) {
+      throw new BadRequestException('channelId is required');
+    }
+
+    if (!dto.publishedDate) {
+      throw new BadRequestException('publishedDate is required');
+    }
+
+    const channel = await Channel.findOne({
+      where: { channelId: dto.channelId, userId: user.id },
+      raw: true,
+    });
+    if (!channel) {
+      throw new NotFoundException(`Channel not found for ${dto.channelId}`);
+    }
+
+    const outputDir = join(process.cwd(), 'output-videos');
+    const thumbnailDir = join(process.cwd(), 'thumbnail');
+    if (!existsSync(outputDir)) {
+      mkdirSync(outputDir, { recursive: true });
+    }
+    if (!existsSync(thumbnailDir)) {
+      mkdirSync(thumbnailDir, { recursive: true });
+    }
+
+    if (dto.backgroundId && dto.backgroundVideoId) {
+      throw new BadRequestException(
+        'Cannot use both background image and background video simultaneously',
+      );
+    }
+
+    let templateHtml = template.code;
+    const escapedContent = this.escapeForJsString(content);
+    templateHtml = templateHtml.replace('{{content}}', escapedContent);
+
+    const now = new Date();
+    const datePart = now.toISOString().slice(0, 10);
+    const timePart = Date.now();
+    const filename = `${datePart}-${timePart}.mp4`;
+    const outputPath = join(outputDir, filename);
+
+    let preparedAudioPath: string | null = null;
+    try {
+      const audioFilePath = await this.resolveAudioFilePath(dto.audioId, user);
+      preparedAudioPath = await this.audioService.prepareAudio(audioFilePath);
+
+      if (dto.backgroundVideoId) {
+        const backgroundVideo = await BackgroundVideo.findByPk(
+          dto.backgroundVideoId,
+          {
+            raw: true,
+          },
+        );
+        if (!backgroundVideo) {
+          throw new NotFoundException(
+            `Background video with ID ${dto.backgroundVideoId} not found`,
+          );
+        }
+        if (
+          !this.isAdmin(user) &&
+          backgroundVideo.userId !== user.id &&
+          backgroundVideo.visibility !== Visibility.PUBLIC
+        ) {
+          throw new ForbiddenException(
+            'You do not have access to this background video',
+          );
+        }
+        const backgroundVideoPath = join(process.cwd(), backgroundVideo.path);
+        if (!existsSync(backgroundVideoPath)) {
+          throw new NotFoundException(
+            `Background video file not found at ${backgroundVideo.path}`,
+          );
+        }
+
+        const overlayPath = join(outputDir, `overlay-${Date.now()}.png`);
+        await this.htmlToImageService.renderTransparent(
+          templateHtml,
+          overlayPath,
+        );
+
+        if (dto.subscribeImageId) {
+          const subscribeImage = await SubscribeImage.findByPk(
+            dto.subscribeImageId,
+            {
+              raw: true,
+            },
+          );
+          if (!subscribeImage) {
+            throw new NotFoundException(
+              `Subscribe image with ID ${dto.subscribeImageId} not found`,
+            );
+          }
+          if (
+            !this.isAdmin(user) &&
+            subscribeImage.userId !== user.id &&
+            subscribeImage.visibility !== Visibility.PUBLIC
+          ) {
+            throw new ForbiddenException(
+              'You do not have access to this subscribe image',
+            );
+          }
+          const subscribeImgPath = join(process.cwd(), subscribeImage.path);
+          if (!existsSync(subscribeImgPath)) {
+            throw new NotFoundException(
+              `Subscribe image file not found at ${subscribeImage.path}`,
+            );
+          }
+
+          const mainSegmentPath = join(
+            outputDir,
+            `segment-main-${timePart}.mp4`,
+          );
+          const subscribeSegmentPath = join(
+            outputDir,
+            `segment-subscribe-${timePart}.mp4`,
+          );
+          const concatPath = join(outputDir, `concat-${timePart}.mp4`);
+
+          await this.imageToVideoService.stitchWithOverlay(
+            backgroundVideoPath,
+            overlayPath,
+            10,
+            mainSegmentPath,
+          );
+          await this.imageToVideoService.stitch(
+            subscribeImgPath,
+            5,
+            subscribeSegmentPath,
+          );
+          await this.imageToVideoService.concatenate(
+            [mainSegmentPath, subscribeSegmentPath],
+            concatPath,
+          );
+          await this.imageToVideoService.mergeAudio(
+            concatPath,
+            preparedAudioPath ?? undefined,
+            outputPath,
+          );
+
+          this.safeUnlink(mainSegmentPath);
+          this.safeUnlink(subscribeSegmentPath);
+          this.safeUnlink(concatPath);
+        } else {
+          await this.imageToVideoService.stitchWithOverlay(
+            backgroundVideoPath,
+            overlayPath,
+            15,
+            outputPath,
+            preparedAudioPath ?? undefined,
+          );
+        }
+      } else {
+        const bgConfig = await this.buildBackgroundConfig(
+          dto.backgroundId,
+          user,
+        );
+        if (bgConfig.enabled && bgConfig.dataUrl) {
+          templateHtml = this.injectBackgroundImageIntoTemplate(
+            templateHtml,
+            bgConfig.dataUrl,
+          );
+        }
+
+        const framePath = join(outputDir, `frame-${Date.now()}.png`);
+        await this.htmlToImageService.render(templateHtml, framePath);
+
+        if (dto.subscribeImageId) {
+          const subscribeImage = await SubscribeImage.findByPk(
+            dto.subscribeImageId,
+            {
+              raw: true,
+            },
+          );
+          if (!subscribeImage) {
+            throw new NotFoundException(
+              `Subscribe image with ID ${dto.subscribeImageId} not found`,
+            );
+          }
+          if (
+            !this.isAdmin(user) &&
+            subscribeImage.userId !== user.id &&
+            subscribeImage.visibility !== Visibility.PUBLIC
+          ) {
+            throw new ForbiddenException(
+              'You do not have access to this subscribe image',
+            );
+          }
+          const subscribeImgPath = join(process.cwd(), subscribeImage.path);
+          if (!existsSync(subscribeImgPath)) {
+            throw new NotFoundException(
+              `Subscribe image file not found at ${subscribeImage.path}`,
+            );
+          }
+
+          const mainSegmentPath = join(
+            outputDir,
+            `segment-main-${timePart}.mp4`,
+          );
+          const subscribeSegmentPath = join(
+            outputDir,
+            `segment-subscribe-${timePart}.mp4`,
+          );
+          const concatPath = join(outputDir, `concat-${timePart}.mp4`);
+
+          await this.imageToVideoService.stitch(framePath, 10, mainSegmentPath);
+          await this.imageToVideoService.stitch(
+            subscribeImgPath,
+            5,
+            subscribeSegmentPath,
+          );
+          await this.imageToVideoService.concatenate(
+            [mainSegmentPath, subscribeSegmentPath],
+            concatPath,
+          );
+          await this.imageToVideoService.mergeAudio(
+            concatPath,
+            preparedAudioPath ?? undefined,
+            outputPath,
+          );
+
+          this.safeUnlink(mainSegmentPath);
+          this.safeUnlink(subscribeSegmentPath);
+          this.safeUnlink(concatPath);
+        } else {
+          await this.imageToVideoService.stitch(
+            framePath,
+            15,
+            outputPath,
+            preparedAudioPath ?? undefined,
+          );
+        }
+
+        this.safeUnlink(framePath);
+      }
+    } finally {
+      this.audioService.cleanupTemp(preparedAudioPath);
+    }
+
+    const thumbnailFilename = `${datePart}-${timePart}.png`;
+    const thumbnailPath = join(thumbnailDir, thumbnailFilename);
+    await this.generateThumbnailFromVideo(outputPath, thumbnailPath);
+
+    const storedMetadata = await this.generateAndStoreMetadata(
+      title,
+      content,
+      filename,
+      outputPath,
+      channel.id,
+      dto.publishedDate,
+      null,
+      thumbnailPath,
+      user,
+    );
+
+    return { outputPath, metadata: storedMetadata };
+  }
+
   private async ensureUserHasChannel(userId: string): Promise<void> {
     const channels = await Channel.findAll({ where: { userId } });
     if (!channels || channels.length === 0) {
@@ -421,7 +703,7 @@ export class VideoGenerationService {
     outputPath: string,
     channelDbId: string,
     publishedDate: string,
-    contentId: string,
+    contentId: string | null,
     thumbnailPath: string,
     user: UserPlain,
   ): Promise<Metadata> {
@@ -513,7 +795,6 @@ export class VideoGenerationService {
       );
     }
 
-    
     if (
       user &&
       !this.isAdmin(user) &&
@@ -574,5 +855,26 @@ export class VideoGenerationService {
       'custom',
       'news',
     ];
+  }
+
+  private injectBackgroundImageIntoTemplate(
+    html: string,
+    dataUrl: string,
+  ): string {
+    const css = `body { background-image: url(${dataUrl}) !important; background-size: cover !important; background-position: center !important; }`;
+    const styleBlock = `<style>${css}</style>`;
+    if (html.includes('</head>')) {
+      return html.replace('</head>', `${styleBlock}</head>`);
+    }
+    return styleBlock + html;
+  }
+
+  private escapeForJsString(str: string): string {
+    return str
+      .replace(/\\/g, '\\\\')
+      .replace(/"/g, '\\"')
+      .replace(/\n/g, '\\n')
+      .replace(/\r/g, '\\r')
+      .replace(/\t/g, '\\t');
   }
 }

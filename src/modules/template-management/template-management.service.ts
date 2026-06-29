@@ -57,7 +57,7 @@ export class TemplateManagementService {
     id: string,
     user: { id: string; role: string },
   ): Promise<Template> {
-    const record = await Template.findByPk(id);
+    const record = await Template.findByPk(id, { raw: true });
     if (!record) {
       throw new NotFoundException(`Template with ID ${id} not found`);
     }
