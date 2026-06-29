@@ -12,7 +12,7 @@ import { SubscribeImage } from 'src/common/models/subscribe-image.model';
 import { Metadata } from 'src/common/models/metadata.model';
 import { Channel } from 'src/common/models/channel.model';
 import { CerebrasService } from 'src/common/services/cerebras.service';
-import { join } from 'path';
+import { join, relative } from 'path';
 import { existsSync, mkdirSync, unlinkSync, readFileSync } from 'fs';
 import { exec } from 'child_process';
 import { promisify } from 'util';
@@ -425,6 +425,8 @@ export class VideoGenerationService {
     thumbnailPath: string,
     user: UserPlain,
   ): Promise<Metadata> {
+    const relativeOutputPath = relative(process.cwd(), outputPath);
+
     try {
       const aiMetadata = await this.cerebrasService.generateMetadata(
         title,
@@ -435,7 +437,7 @@ export class VideoGenerationService {
         description: aiMetadata.description,
         tags: aiMetadata.tags,
         file_name: filename,
-        output_video_path: outputPath,
+        output_video_path: relativeOutputPath,
         privacy_status: 'private',
         default_language: 'en',
         self_declared_made_for_kids: true,
@@ -457,7 +459,7 @@ export class VideoGenerationService {
         description: '',
         tags: [],
         file_name: filename,
-        output_video_path: outputPath,
+        output_video_path: relativeOutputPath,
         privacy_status: 'private',
         default_language: 'en',
         self_declared_made_for_kids: true,
