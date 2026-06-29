@@ -78,7 +78,7 @@ export class ChannelManagementService {
     if (!record) {
       throw new NotFoundException(`Channel with ID ${id} not found`);
     }
-    if (!this.isAdmin(user) && record.userId !== user.id) {
+    if (!this.isAdmin(user) && record.dataValues.userId !== user.id) {
       throw new ForbiddenException(
         'You do not have permission to update this channel',
       );
