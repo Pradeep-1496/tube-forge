@@ -506,12 +506,14 @@ export class VideoGenerationService {
       return { enabled: false, opacity: 0.45 };
     }
 
-    const background = await Background.findByPk(backgroundId);
+    const background = await Background.findByPk(backgroundId, { raw: true });
     if (!background) {
       throw new NotFoundException(
         `Background with ID ${backgroundId} not found`,
       );
     }
+
+    
     if (
       user &&
       !this.isAdmin(user) &&

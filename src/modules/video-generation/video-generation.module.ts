@@ -26,5 +26,6 @@ import { User } from 'src/common/models/user.model';
     BackgroundImageProvider,
     CerebrasService,
   ],
+  exports: [VideoGenerationService],
 })
 export class VideoGenerationModule {}

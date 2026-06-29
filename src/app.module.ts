@@ -14,12 +14,14 @@ import { AuthModule } from './modules/auth/auth.module';
 import { ChannelManagementModule } from './modules/channel-management/channel-management.module';
 import { TemplateManagementModule } from './modules/template-management/template-management.module';
 import { AppController } from './app.controller';
+import { DraftVideoModule } from './modules/draft-video/draft-video.module';
 
 @Module({
   imports: [
     CommonModule,
     DatabaseModule,
     AuthModule,
+    DraftVideoModule,
     ChannelManagementModule,
     TemplateManagementModule,
     VideoGenerationModule,

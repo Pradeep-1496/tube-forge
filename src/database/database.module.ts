@@ -10,6 +10,7 @@ import { SubscribeImage } from 'src/common/models/subscribe-image.model';
 import { User } from 'src/common/models/user.model';
 import { Channel } from 'src/common/models/channel.model';
 import { Template } from 'src/common/models/template.model';
+import { DraftVideo } from 'src/common/models/draft-video.model';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { Template } from 'src/common/models/template.model';
         User,
         Channel,
         Template,
+        DraftVideo,
       ],
     }),
   ],
