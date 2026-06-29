@@ -8,7 +8,6 @@ import {
 } from 'sequelize-typescript';
 import { User } from './user.model';
 import { MetadataStatus } from '../enums/metadata-status.enum';
-import { Visibility } from '../enums/visibility.enum';
 
 @Table({
   tableName: 'metadata',
@@ -148,12 +147,4 @@ export class Metadata extends Model {
 
   @BelongsTo(() => User)
   user!: User;
-
-  @Column({
-    type: DataType.STRING,
-    allowNull: false,
-    values: [Visibility.PUBLIC, Visibility.PRIVATE],
-    defaultValue: Visibility.PRIVATE,
-  })
-  visibility!: Visibility;
 }

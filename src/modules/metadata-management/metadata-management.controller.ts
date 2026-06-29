@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Param, Body, UseGuards } from '@nestjs/common';
+import { Controller, Get, Put, Param, Body, UseGuards } from '@nestjs/common';
 import {
   ApiTags,
   ApiOperation,
@@ -8,7 +8,7 @@ import {
   ApiBearerAuth,
 } from '@nestjs/swagger';
 import { MetadataManagementService } from './metadata-management.service';
-import { CreateMetadataDto } from './dto/create-metadata.dto';
+import { UpdateMetadataDto } from './dto/update-metadata.dto';
 import { Metadata } from 'src/common/models/metadata.model';
 import { RolesGuard } from 'src/common/guards/roles.guard';
 import { Roles } from 'src/common/decorators/roles.decorator';
@@ -31,20 +31,23 @@ export class MetadataManagementController {
     private readonly metadataManagementService: MetadataManagementService,
   ) {}
 
-  @Post()
-  @ApiOperation({ summary: 'Create new metadata' })
-  @ApiBody({ type: CreateMetadataDto })
+  @Put(':id')
+  @ApiOperation({ summary: 'Update metadata' })
+  @ApiBody({ type: UpdateMetadataDto })
+  @ApiParam({ name: 'id', description: 'Metadata ID' })
   @ApiResponse({
-    status: 201,
-    description: 'Metadata created successfully',
+    status: 200,
+    description: 'Metadata updated successfully',
     type: Metadata,
   })
+  @ApiResponse({ status: 404, description: 'Metadata not found' })
   @ApiResponse({ status: 400, description: 'Bad request' })
-  async create(@Body() dto: CreateMetadataDto, @CurrentUser() user: UserPlain) {
-    return this.metadataManagementService.create({
-      ...dto,
-      userId: user.id,
-    });
+  async update(
+    @Param('id') id: string,
+    @Body() dto: UpdateMetadataDto,
+    @CurrentUser() _user: UserPlain,
+  ) {
+    return this.metadataManagementService.update(id, dto);
   }
 
   @Get()

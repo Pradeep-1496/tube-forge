@@ -36,9 +36,10 @@ export class ContentManagementService {
 
   async findAll(user: { id: string; role: string }): Promise<VideoContent[]> {
     if (this.isAdmin(user)) {
-      return VideoContent.findAll({ order: [['created_at', 'DESC']],
+      return VideoContent.findAll({
+        order: [['created_at', 'DESC']],
         include: [{ model: User, attributes: ['name'] }],
-       });
+      });
     }
     return VideoContent.findAll({
       where: {
