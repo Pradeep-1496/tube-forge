@@ -5,7 +5,6 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { Channel } from 'src/common/models/channel.model';
-import { Op } from 'sequelize';
 
 @Injectable()
 export class ChannelManagementService {

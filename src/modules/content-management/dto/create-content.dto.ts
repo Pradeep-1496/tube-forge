@@ -18,13 +18,11 @@ export class CreateContentDto {
   content!: string;
 
   @ApiProperty({
-    enum: ['video', 'audio', 'image', 'text'],
-    required: false,
+    example: 'video',
     description: 'Type of content',
   })
-  @IsOptional()
-  @IsIn(['video', 'audio', 'image', 'text'])
-  type?: string;
+  @IsString()
+  type!: string;
 
   @ApiProperty({
     enum: [Visibility.PUBLIC, Visibility.PRIVATE],

@@ -1,4 +1,12 @@
-import { Controller, Get, Put, Param, Body, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Put,
+  Delete,
+  Param,
+  Body,
+  UseGuards,
+} from '@nestjs/common';
 import {
   ApiTags,
   ApiOperation,
@@ -48,6 +56,16 @@ export class MetadataManagementController {
     @CurrentUser() _user: UserPlain,
   ) {
     return this.metadataManagementService.update(id, dto);
+  }
+
+  @Delete(':id')
+  @ApiOperation({ summary: 'Delete metadata by ID' })
+  @ApiParam({ name: 'id', description: 'Metadata ID' })
+  @ApiResponse({ status: 200, description: 'Metadata deleted successfully' })
+  @ApiResponse({ status: 404, description: 'Metadata not found' })
+  async remove(@Param('id') id: string, @CurrentUser() user: UserPlain) {
+    await this.metadataManagementService.remove(id, user);
+    return { message: 'Metadata deleted successfully' };
   }
 
   @Get()

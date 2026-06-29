@@ -18,7 +18,7 @@ export class ContentManagementService {
   async create(data: {
     title: string;
     content: string;
-    type?: string;
+    type: string;
     userId: string;
     visibility?: Visibility;
   }): Promise<VideoContent> {
@@ -82,7 +82,7 @@ export class ContentManagementService {
     if (!record) {
       throw new NotFoundException(`Content with ID ${id} not found`);
     }
-    if (!this.isAdmin(user) && record.userId !== user.id) {
+    if (!this.isAdmin(user) && record.dataValues.userId !== user.id) {
       throw new ForbiddenException(
         'You do not have permission to update this content',
       );

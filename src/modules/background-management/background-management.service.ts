@@ -11,6 +11,7 @@ import { Op } from 'sequelize';
 import { join } from 'path';
 import { existsSync, mkdirSync, unlinkSync, statSync, writeFileSync } from 'fs';
 import sharp from 'sharp';
+import { User } from 'src/common/models/user.model';
 
 @Injectable()
 export class BackgroundManagementService {
@@ -106,7 +107,10 @@ export class BackgroundManagementService {
 
   async findAll(user: { id: string; role: string }): Promise<Background[]> {
     if (this.isAdmin(user)) {
-      return Background.findAll({ order: [['created_at', 'DESC']] });
+      return Background.findAll({
+        order: [['created_at', 'DESC']],
+        include: [{ model: User, attributes: ['name'] }],
+      });
     }
     return Background.findAll({
       where: {
@@ -120,7 +124,9 @@ export class BackgroundManagementService {
     id: string,
     user: { id: string; role: string },
   ): Promise<Background> {
-    const background = await Background.findByPk(id);
+    const background = await Background.findByPk(id, {
+      include: [{ model: User, attributes: ['name'] }],
+    });
     if (!background) {
       throw new NotFoundException(`Background with ID ${id} not found`);
     }

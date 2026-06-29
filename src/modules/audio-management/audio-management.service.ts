@@ -10,6 +10,7 @@ import { Op } from 'sequelize';
 import { join } from 'path';
 import { existsSync, mkdirSync, unlinkSync, statSync, writeFileSync } from 'fs';
 import { spawn } from 'child_process';
+import { User } from 'src/common/models/user.model';
 
 @Injectable()
 export class AudioManagementService {
@@ -57,13 +58,17 @@ export class AudioManagementService {
 
   async findAll(user: { id: string; role: string }): Promise<Audio[]> {
     if (this.isAdmin(user)) {
-      return Audio.findAll({ order: [['created_at', 'DESC']] });
+      return Audio.findAll({
+        order: [['created_at', 'DESC']],
+        include: [{ model: User, attributes: ['name'] }],
+      });
     }
     return Audio.findAll({
       where: {
         [Op.or]: [{ userId: user.id }, { visibility: Visibility.PUBLIC }],
       },
       order: [['created_at', 'DESC']],
+      include: [{ model: User, attributes: ['name'] }],
     });
   }
 

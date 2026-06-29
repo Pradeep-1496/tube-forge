@@ -28,7 +28,7 @@ export class MetadataManagementService {
     id: string,
     user: { id: string; role: string },
   ): Promise<Metadata> {
-    const metadata = await Metadata.findByPk(id);
+    const metadata = await Metadata.findByPk(id, { raw: true });
     if (!metadata) {
       throw new NotFoundException(`Metadata with ID ${id} not found`);
     }
@@ -77,5 +77,18 @@ export class MetadataManagementService {
 
     await metadata.update(updatePayload);
     return metadata;
+  }
+
+  async remove(id: string, user: { id: string; role: string }): Promise<void> {
+    const metadata = await Metadata.findByPk(id);
+    if (!metadata) {
+      throw new NotFoundException(`Metadata with ID ${id} not found`);
+    }
+    if (!this.isAdmin(user) && metadata.dataValues.userId !== user.id) {
+      throw new ForbiddenException(
+        'You do not have permission to delete this metadata',
+      );
+    }
+    await metadata.destroy();
   }
 }

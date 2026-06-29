@@ -20,12 +20,11 @@ export class UpdateContentDto {
   content?: string;
 
   @ApiPropertyOptional({
-    enum: ['video', 'audio', 'image', 'text'],
-    required: false,
+    example: 'new video',
     description: 'Type of content',
   })
   @IsOptional()
-  @IsIn(['video', 'audio', 'image', 'text'])
+  @IsString()
   type?: string;
 
   @ApiPropertyOptional({

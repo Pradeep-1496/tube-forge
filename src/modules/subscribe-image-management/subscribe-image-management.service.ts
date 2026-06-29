@@ -10,6 +10,7 @@ import { Op } from 'sequelize';
 import { join } from 'path';
 import { existsSync, mkdirSync, unlinkSync, statSync, writeFileSync } from 'fs';
 import sharp from 'sharp';
+import { User } from 'src/common/models/user.model';
 
 @Injectable()
 export class SubscribeImageManagementService {
@@ -99,13 +100,17 @@ export class SubscribeImageManagementService {
 
   async findAll(user: { id: string; role: string }): Promise<SubscribeImage[]> {
     if (this.isAdmin(user)) {
-      return SubscribeImage.findAll({ order: [['created_at', 'DESC']] });
+      return SubscribeImage.findAll({
+        order: [['created_at', 'DESC']],
+        include: [{ model: User, attributes: ['name'] }],
+      });
     }
     return SubscribeImage.findAll({
       where: {
         [Op.or]: [{ userId: user.id }, { visibility: Visibility.PUBLIC }],
       },
       order: [['created_at', 'DESC']],
+      include: [{ model: User, attributes: ['name'] }],
     });
   }
 
@@ -113,7 +118,9 @@ export class SubscribeImageManagementService {
     id: string,
     user: { id: string; role: string },
   ): Promise<SubscribeImage> {
-    const subscribeImage = await SubscribeImage.findByPk(id);
+    const subscribeImage = await SubscribeImage.findByPk(id, {
+      include: [{ model: User, attributes: ['name'] }],
+    });
     if (!subscribeImage) {
       throw new NotFoundException(`Subscribe image with ID ${id} not found`);
     }

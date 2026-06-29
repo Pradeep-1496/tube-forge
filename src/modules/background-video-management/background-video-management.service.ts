@@ -11,6 +11,7 @@ import { Op } from 'sequelize';
 import { join } from 'path';
 import { existsSync, mkdirSync, unlinkSync, statSync, writeFileSync } from 'fs';
 import { spawn } from 'child_process';
+import { User } from 'src/common/models/user.model';
 
 @Injectable()
 export class BackgroundVideoManagementService {
@@ -98,13 +99,17 @@ export class BackgroundVideoManagementService {
     role: string;
   }): Promise<BackgroundVideo[]> {
     if (this.isAdmin(user)) {
-      return BackgroundVideo.findAll({ order: [['created_at', 'DESC']] });
+      return BackgroundVideo.findAll({
+        order: [['created_at', 'DESC']],
+        include: [{ model: User, attributes: ['name'] }],
+      });
     }
     return BackgroundVideo.findAll({
       where: {
         [Op.or]: [{ userId: user.id }, { visibility: Visibility.PUBLIC }],
       },
       order: [['created_at', 'DESC']],
+      include: [{ model: User, attributes: ['name'] }],
     });
   }
 
@@ -112,7 +117,9 @@ export class BackgroundVideoManagementService {
     id: string,
     user: { id: string; role: string },
   ): Promise<BackgroundVideo> {
-    const backgroundVideo = await BackgroundVideo.findByPk(id);
+    const backgroundVideo = await BackgroundVideo.findByPk(id, {
+      include: [{ model: User, attributes: ['name'] }],
+    });
     if (!backgroundVideo) {
       throw new NotFoundException(`Background video with ID ${id} not found`);
     }
