@@ -21,7 +21,7 @@ export function None(
 </style></head>
 <body style="margin:0;width:1080px;height:1920px;background-color:#111827;${bgCss}display:flex;justify-content:center;align-items:center;font-family:Poppins,sans-serif;overflow:hidden;position:relative;">
 
-
+{{content}}
 
 </body>
 </html>

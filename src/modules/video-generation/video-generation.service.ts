@@ -462,8 +462,7 @@ export class VideoGenerationService {
     }
 
     let templateHtml = template.code;
-    const escapedContent = this.escapeForJsString(content);
-    templateHtml = templateHtml.replace('{{content}}', escapedContent);
+    templateHtml = templateHtml.replace('{{content}}', content);
 
     const now = new Date();
     const datePart = now.toISOString().slice(0, 10);
@@ -871,14 +870,5 @@ export class VideoGenerationService {
       return html.replace('</head>', `${styleBlock}</head>`);
     }
     return styleBlock + html;
-  }
-
-  private escapeForJsString(str: string): string {
-    return str
-      .replace(/\\/g, '\\\\')
-      .replace(/"/g, '\\"')
-      .replace(/\n/g, '\\n')
-      .replace(/\r/g, '\\r')
-      .replace(/\t/g, '\\t');
   }
 }
