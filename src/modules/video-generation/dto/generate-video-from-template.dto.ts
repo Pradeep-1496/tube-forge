@@ -43,24 +43,6 @@ export class GenerateVideoFromTemplateDto {
   audioId?: string;
 
   @ApiPropertyOptional({
-    description: 'Theme key to use for the video template',
-    example: 'neon',
-    enum: [
-      'glassmorphism',
-      'neon',
-      'viral',
-      'apple',
-      'gold',
-      'none',
-      'custom',
-      'news',
-    ],
-  })
-  @IsOptional()
-  @IsString()
-  theme?: string;
-
-  @ApiPropertyOptional({
     description: 'Subscribe image ID from the subscribe-images collection',
     example: 'ccddeeff-1234-1234-1234-abcdef123456',
   })
