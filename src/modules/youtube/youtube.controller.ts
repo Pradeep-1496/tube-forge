@@ -31,7 +31,4 @@ export class YoutubeController {
       expiryDate: tokens.expiry_date,
     };
   }
-
-
-  
 }

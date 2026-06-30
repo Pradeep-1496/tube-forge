@@ -2,6 +2,6 @@ import { Module } from '@nestjs/common';
 import { YoutubeController } from './youtube.controller';
 
 @Module({
-  imports: [YoutubeController],
+  controllers: [YoutubeController],
 })
 export class YoutubeModule {}
