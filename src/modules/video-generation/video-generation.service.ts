@@ -472,6 +472,7 @@ export class VideoGenerationService {
     const outputPath = join(outputDir, filename);
 
     let preparedAudioPath: string | null = null;
+    let overlayPath: string | null = null;
     try {
       const audioFilePath = await this.resolveAudioFilePath(dto.audioId, user);
       preparedAudioPath = await this.audioService.prepareAudio(audioFilePath);
@@ -504,7 +505,7 @@ export class VideoGenerationService {
           );
         }
 
-        const overlayPath = join(outputDir, `overlay-${Date.now()}.png`);
+        overlayPath = join(outputDir, `overlay-${Date.now()}.png`);
         await this.htmlToImageService.renderTransparent(
           templateHtml,
           overlayPath,
@@ -663,6 +664,9 @@ export class VideoGenerationService {
         }
 
         this.safeUnlink(framePath);
+      }
+      if (overlayPath != null && existsSync(overlayPath)) {
+        unlinkSync(overlayPath);
       }
     } finally {
       this.audioService.cleanupTemp(preparedAudioPath);
