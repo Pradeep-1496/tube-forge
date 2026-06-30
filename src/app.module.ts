@@ -15,7 +15,7 @@ import { ChannelManagementModule } from './modules/channel-management/channel-ma
 import { TemplateManagementModule } from './modules/template-management/template-management.module';
 import { AppController } from './app.controller';
 import { DraftVideoModule } from './modules/draft-video/draft-video.module';
-import { YoutubeController } from './youtube.controller';
+import { YoutubeModule } from './modules/youtube/youtube.module';
 
 @Module({
   imports: [
@@ -31,6 +31,7 @@ import { YoutubeController } from './youtube.controller';
     BackgroundVideoManagementModule,
     ContentManagementModule,
     MetadataManagementModule,
+    YoutubeModule,
     SubscribeImageManagementModule,
     ServeStaticModule.forRoot(
       {
@@ -60,7 +61,7 @@ import { YoutubeController } from './youtube.controller';
       },
     ),
   ],
-  controllers: [AppController, YoutubeController],
+  controllers: [AppController],
   providers: [],
 })
 export class AppModule {}
