@@ -15,6 +15,7 @@ import { ChannelManagementModule } from './modules/channel-management/channel-ma
 import { TemplateManagementModule } from './modules/template-management/template-management.module';
 import { AppController } from './app.controller';
 import { DraftVideoModule } from './modules/draft-video/draft-video.module';
+import { YoutubeController } from './youtube.controller';
 
 @Module({
   imports: [
@@ -59,7 +60,7 @@ import { DraftVideoModule } from './modules/draft-video/draft-video.module';
       },
     ),
   ],
-  controllers: [AppController],
+  controllers: [AppController, YoutubeController],
   providers: [],
 })
 export class AppModule {}
