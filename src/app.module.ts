@@ -8,6 +8,9 @@ import { BackgroundVideoManagementModule } from './modules/background-video-mana
 import { ContentManagementModule } from './modules/content-management/content-management.module';
 import { MetadataManagementModule } from './modules/metadata-management/metadata-management.module';
 import { SubscribeImageManagementModule } from './modules/subscribe-image-management/subscribe-image-management.module';
+import { ActivityLogModule } from './modules/activity-log/activity-log.module';
+import { ActivityLogInterceptor } from './common/interceptors/activity-log.interceptor';
+import { APP_INTERCEPTOR } from '@nestjs/core';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { AuthModule } from './modules/auth/auth.module';
@@ -33,6 +36,7 @@ import { YoutubeModule } from './modules/youtube/youtube.module';
     MetadataManagementModule,
     YoutubeModule,
     SubscribeImageManagementModule,
+    ActivityLogModule,
     ServeStaticModule.forRoot(
       {
         rootPath: join(process.cwd(), 'output-videos'),
@@ -62,6 +66,11 @@ import { YoutubeModule } from './modules/youtube/youtube.module';
     ),
   ],
   controllers: [AppController],
-  providers: [],
+  providers: [
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: ActivityLogInterceptor,
+    },
+  ],
 })
 export class AppModule {}

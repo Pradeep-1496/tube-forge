@@ -23,6 +23,10 @@ import { Template } from 'src/common/models/template.model';
 import { RolesGuard } from 'src/common/guards/roles.guard';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
+import {
+  LogActivity,
+  ActivityAction,
+} from 'src/common/decorators/log-activity.decorator';
 
 interface UserPlain {
   id: string;
@@ -42,6 +46,11 @@ export class TemplateManagementController {
   ) {}
 
   @Post()
+  @LogActivity({
+    action: ActivityAction.CREATE_TEMPLATE,
+    resourceType: 'template',
+    extractResourceId: (result) => (result as { id?: string })?.id || null,
+  })
   @ApiOperation({ summary: 'Create new template' })
   @ApiBody({ type: CreateTemplateDto })
   @ApiResponse({

@@ -36,7 +36,10 @@ export class HtmlToImageService {
     try {
       const page = await browser.newPage();
       await page.setViewport({ width: 1080, height: 1920 });
-      await page.setContent(html, { waitUntil: 'networkidle0', timeout: 30000 } as Record<string, unknown>);
+      await page.setContent(html, {
+        waitUntil: 'networkidle0',
+        timeout: 30000,
+      } as Record<string, unknown>);
       await page.waitForSelector('body');
       await page.screenshot({ path: outputPath, type: 'png' });
     } finally {
@@ -59,7 +62,10 @@ export class HtmlToImageService {
     try {
       const page = await browser.newPage();
       await page.setViewport({ width: 1080, height: 1920 });
-      await page.setContent(html, { waitUntil: 'networkidle0', timeout: 30000 } as Record<string, unknown>);
+      await page.setContent(html, {
+        waitUntil: 'networkidle0',
+        timeout: 30000,
+      } as Record<string, unknown>);
       await page.evaluate(() => {
         const body = document.body;
         if (body) {
@@ -78,9 +84,11 @@ export class HtmlToImageService {
             body.style.setProperty(key, value);
           }
         }
-        document.querySelectorAll('div[style*="position:absolute"][style*="inset:0"]').forEach((el) => {
-          el.remove();
-        });
+        document
+          .querySelectorAll('div[style*="position:absolute"][style*="inset:0"]')
+          .forEach((el) => {
+            el.remove();
+          });
       });
       await page.waitForSelector('body');
       await page.screenshot({

@@ -26,6 +26,10 @@ import { BackgroundVideo } from 'src/common/models/background-video.model';
 import { RolesGuard } from 'src/common/guards/roles.guard';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
+import {
+  LogActivity,
+  ActivityAction,
+} from 'src/common/decorators/log-activity.decorator';
 
 interface UserPlain {
   id: string;
@@ -45,6 +49,11 @@ export class BackgroundVideoManagementController {
   ) {}
 
   @Post('upload')
+  @LogActivity({
+    action: ActivityAction.UPLOAD_BACKGROUND_VIDEO,
+    resourceType: 'background_video',
+    extractResourceId: (result) => (result as { id?: string })?.id || null,
+  })
   @ApiOperation({ summary: 'Upload a new background video' })
   @ApiConsumes('multipart/form-data')
   @ApiBody({ type: CreateBackgroundVideoDto })

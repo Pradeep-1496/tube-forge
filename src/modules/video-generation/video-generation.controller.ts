@@ -13,6 +13,10 @@ import { GenerateVideoFromTemplateDto } from './dto/generate-video-from-template
 import { RolesGuard } from 'src/common/guards/roles.guard';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
+import {
+  LogActivity,
+  ActivityAction,
+} from 'src/common/decorators/log-activity.decorator';
 
 interface UserPlain {
   id: string;
@@ -32,6 +36,11 @@ export class VideoGenerationController {
   ) {}
 
   @Post('generate/:id')
+  @LogActivity({
+    action: ActivityAction.GENERATE_VIDEO,
+    resourceType: 'video_generation',
+    extractResourceId: (result) => (result as { id?: string })?.id || null,
+  })
   @ApiOperation({
     summary:
       'Generate a 15-second video from video content ID (10s main + 5s subscribe image if subscribeImageId provided)',
@@ -50,6 +59,11 @@ export class VideoGenerationController {
   }
 
   @Post('generate-from-video/:videoContentId/:backgroundVideoId')
+  @LogActivity({
+    action: ActivityAction.GENERATE_VIDEO_FROM_BACKGROUND,
+    resourceType: 'video_generation',
+    extractResourceId: (result) => (result as { id?: string })?.id || null,
+  })
   @ApiOperation({
     summary:
       'Generate a 15-second video from video content + background video + optional audio + theme (10s main + 5s subscribe image if subscribeImageId provided)',
@@ -82,6 +96,11 @@ export class VideoGenerationController {
   }
 
   @Post('generate-from-template/:templateId')
+  @LogActivity({
+    action: ActivityAction.GENERATE_VIDEO_FROM_TEMPLATE,
+    resourceType: 'video_generation',
+    extractResourceId: (result) => (result as { id?: string })?.id || null,
+  })
   @ApiOperation({
     summary:
       'Generate a 15-second video from a template ID by injecting custom content into {{content}} (supports background image or video + audio)',

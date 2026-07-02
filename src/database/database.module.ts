@@ -11,6 +11,7 @@ import { User } from 'src/common/models/user.model';
 import { Channel } from 'src/common/models/channel.model';
 import { Template } from 'src/common/models/template.model';
 import { DraftVideo } from 'src/common/models/draft-video.model';
+import { ActivityLog } from 'src/common/models/activity-log.model';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { DraftVideo } from 'src/common/models/draft-video.model';
         Channel,
         Template,
         DraftVideo,
+        ActivityLog,
       ],
     }),
   ],

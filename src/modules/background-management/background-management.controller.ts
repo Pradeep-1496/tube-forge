@@ -26,6 +26,10 @@ import { Background } from 'src/common/models/background.model';
 import { RolesGuard } from 'src/common/guards/roles.guard';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
+import {
+  LogActivity,
+  ActivityAction,
+} from 'src/common/decorators/log-activity.decorator';
 
 interface UserPlain {
   id: string;
@@ -45,6 +49,11 @@ export class BackgroundManagementController {
   ) {}
 
   @Post('upload')
+  @LogActivity({
+    action: ActivityAction.UPLOAD_BACKGROUND,
+    resourceType: 'background',
+    extractResourceId: (result) => (result as { id?: string })?.id || null,
+  })
   @ApiOperation({ summary: 'Upload a new background image' })
   @ApiConsumes('multipart/form-data')
   @ApiBody({ type: CreateBackgroundDto })

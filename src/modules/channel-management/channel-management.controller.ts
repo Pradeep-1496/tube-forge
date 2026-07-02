@@ -23,6 +23,10 @@ import { Channel } from 'src/common/models/channel.model';
 import { RolesGuard } from 'src/common/guards/roles.guard';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
+import {
+  LogActivity,
+  ActivityAction,
+} from 'src/common/decorators/log-activity.decorator';
 
 interface UserPlain {
   id: string;
@@ -42,6 +46,11 @@ export class ChannelManagementController {
   ) {}
 
   @Post()
+  @LogActivity({
+    action: ActivityAction.CREATE_CHANNEL,
+    resourceType: 'channel',
+    extractResourceId: (result) => (result as { id?: string })?.id || null,
+  })
   @ApiOperation({ summary: 'Create a new YouTube channel configuration' })
   @ApiBody({ type: CreateChannelDto })
   @ApiResponse({

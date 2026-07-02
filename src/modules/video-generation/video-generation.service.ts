@@ -414,7 +414,7 @@ export class VideoGenerationService {
     await this.ensureUserHasChannel(user.id);
 
     const template = await Template.findByPk(templateId, {
-      raw: true,  
+      raw: true,
     });
     if (!template) {
       throw new NotFoundException(`Template with ID ${templateId} not found`);

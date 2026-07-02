@@ -26,6 +26,10 @@ import { Audio } from 'src/common/models/audio.model';
 import { RolesGuard } from 'src/common/guards/roles.guard';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
+import {
+  LogActivity,
+  ActivityAction,
+} from 'src/common/decorators/log-activity.decorator';
 
 interface UserPlain {
   id: string;
@@ -45,6 +49,11 @@ export class AudioManagementController {
   ) {}
 
   @Post('upload')
+  @LogActivity({
+    action: ActivityAction.UPLOAD_AUDIO,
+    resourceType: 'audio',
+    extractResourceId: (result) => (result as { id?: string })?.id || null,
+  })
   @ApiOperation({ summary: 'Upload a new audio file' })
   @ApiConsumes('multipart/form-data')
   @ApiBody({ type: CreateAudioDto })

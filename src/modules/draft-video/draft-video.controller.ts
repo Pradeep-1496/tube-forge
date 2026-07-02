@@ -24,6 +24,10 @@ import { UpdateDraftVideoDto } from './dto/update-draft-video.dto';
 import { RolesGuard } from 'src/common/guards/roles.guard';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
+import {
+  LogActivity,
+  ActivityAction,
+} from 'src/common/decorators/log-activity.decorator';
 
 interface UserPlain {
   id: string;
@@ -65,6 +69,11 @@ export class DraftVideoController {
   }
 
   @Post('from-content/:videoContentId')
+  @LogActivity({
+    action: ActivityAction.CREATE_DRAFT_FROM_CONTENT,
+    resourceType: 'draft_video',
+    extractResourceId: (result) => (result as { id?: string })?.id || null,
+  })
   @ApiOperation({
     summary:
       'Create a draft record for video generation from a VideoContent ID',
@@ -87,6 +96,11 @@ export class DraftVideoController {
   }
 
   @Post('from-background/:videoContentId/:backgroundVideoId')
+  @LogActivity({
+    action: ActivityAction.CREATE_DRAFT_FROM_BACKGROUND,
+    resourceType: 'draft_video',
+    extractResourceId: (result) => (result as { id?: string })?.id || null,
+  })
   @ApiOperation({
     summary:
       'Create a draft record for video generation from VideoContent + BackgroundVideo',
@@ -115,6 +129,11 @@ export class DraftVideoController {
   }
 
   @Post(':id/generate')
+  @LogActivity({
+    action: ActivityAction.GENERATE_FROM_DRAFT,
+    resourceType: 'draft_video',
+    extractResourceId: () => null,
+  })
   @ApiOperation({
     summary: 'Generate video from draft video ID',
   })

@@ -28,6 +28,10 @@ import { SubscribeImage } from 'src/common/models/subscribe-image.model';
 import { RolesGuard } from 'src/common/guards/roles.guard';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
+import {
+  LogActivity,
+  ActivityAction,
+} from 'src/common/decorators/log-activity.decorator';
 
 interface UserPlain {
   id: string;
@@ -47,6 +51,11 @@ export class SubscribeImageManagementController {
   ) {}
 
   @Post('upload')
+  @LogActivity({
+    action: ActivityAction.UPLOAD_SUBSCRIBE_IMAGE,
+    resourceType: 'subscribe_image',
+    extractResourceId: (result) => (result as { id?: string })?.id || null,
+  })
   @ApiOperation({ summary: 'Upload a new subscribe image' })
   @ApiConsumes('multipart/form-data')
   @ApiBody({ type: CreateSubscribeImageDto })
@@ -101,6 +110,11 @@ export class SubscribeImageManagementController {
   }
 
   @Put(':id')
+  @LogActivity({
+    action: ActivityAction.UPDATE_SUBSCRIBE_IMAGE,
+    resourceType: 'subscribe_image',
+    extractResourceId: (result) => (result as { id?: string })?.id || null,
+  })
   @ApiOperation({ summary: 'Update subscribe image by ID' })
   @ApiParam({ name: 'id', description: 'Subscribe image ID' })
   @ApiConsumes('multipart/form-data')
