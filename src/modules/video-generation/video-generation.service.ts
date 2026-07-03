@@ -28,6 +28,7 @@ import {
 import { GenerateVideoDto } from './dto/generate-video.dto';
 import { GenerateVideoFromTemplateDto } from './dto/generate-video-from-template.dto';
 import { Visibility } from 'src/common/enums/visibility.enum';
+import { GenerateVideoFromTemplateContentDto } from './dto/generate-video-from-template-content.dto';
 
 interface UserPlain {
   id: string;
@@ -404,6 +405,31 @@ export class VideoGenerationService {
     );
 
     return { outputPath, metadata: storedMetadata };
+  }
+
+  async generateVideoFromTemplateContent(
+    user: UserPlain,
+    templateId: string,
+    contentId: string,
+    dto: GenerateVideoFromTemplateContentDto,
+  ) {
+    try {
+      const content: any = await VideoContent.findByPk(contentId, {
+        raw: true,
+      });
+
+      const payload = {
+        title: content?.title,
+        content: content?.content,
+      };
+
+      return this.generateVideoFromTemplate(user, templateId, {
+        ...payload,
+        ...dto,
+      });
+    } catch (error) {
+      throw error;
+    }
   }
 
   async generateVideoFromTemplate(

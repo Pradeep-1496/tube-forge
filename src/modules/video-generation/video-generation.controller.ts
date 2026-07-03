@@ -17,6 +17,7 @@ import {
   LogActivity,
   ActivityAction,
 } from 'src/common/decorators/log-activity.decorator';
+import { GenerateVideoFromTemplateContentDto } from './dto/generate-video-from-template-content.dto';
 
 interface UserPlain {
   id: string;
@@ -118,6 +119,35 @@ export class VideoGenerationController {
     return this.videoGenerationService.generateVideoFromTemplate(
       user,
       templateId,
+      dto,
+    );
+  }
+
+  @Post('generate-from-template/:templateId/:contentId')
+  @LogActivity({
+    action: ActivityAction.GENERATE_VIDEO_FROM_TEMPLATE,
+    resourceType: 'video_generation',
+    extractResourceId: (result) => (result as { id?: string })?.id || null,
+  })
+  @ApiParam({
+    name: 'templateId',
+    description: 'Template ID to generate video from',
+  })
+  @ApiParam({
+    name: 'contentId',
+    description: 'Content ID to generate video from content',
+  })
+  @ApiBody({ type: GenerateVideoFromTemplateContentDto })
+  generateVideoFromContent(
+    @CurrentUser() user: UserPlain,
+    @Param('templateId') templateId: string,
+    @Param('contentId') contentId: string,
+    @Body() dto: GenerateVideoFromTemplateContentDto,
+  ) {
+    return this.videoGenerationService.generateVideoFromTemplateContent(
+      user,
+      templateId,
+      contentId,
       dto,
     );
   }
