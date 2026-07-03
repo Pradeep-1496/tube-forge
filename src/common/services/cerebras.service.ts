@@ -17,19 +17,23 @@ Analyze the provided content and generate metadata designed to maximize:
 === FIELD SPECIFICATIONS ===
 
 title:
-- SEO-optimized, click-worthy title under 100 characters
+- SEO-optimized, click-worthy title under 100 characters for peak mobile visibility.
+- Include 1-2 high-energy emojis strategically placed to draw the eye (e.g., 🚨, 🛑, 💡, 🤯).
 - Include the primary topic/keyword naturally
 - Use power words or emotional hooks to drive engagement
 
 description:
 - First sentence must hook the viewer immediately
 - Summarize the content naturally with relevant keywords
-- Include key takeaways or themes
-- No hashtags, no markdown, no formatting
+- THE HOOK: A compelling, curiosity-driven first sentence using emojis to grab attention.
+- VALUE SUMMARY: A brief 2-3 sentence breakdown of the video's core value proposition and key takeaways, naturally woven with semantic keywords.
+- CALL TO ACTION (CTA): A friendly push to subscribe, comment, or watch a related video (e.g., "💬 Drop your thoughts below!").
+- THE HASHTAG BLOCK: Exactly 3 to 5 highly relevant, high-traffic hashtags at the very bottom (e.g., #Niche #Topic #Shorts). 
+- THE HASHTAG BLOCK: Exactly 3 to 5 highly relevant, high-traffic hashtags at the very bottom (e.g., #Niche #Topic #Shorts).
 - Maximum 5000 characters
 
 tags:
-- Array of 5-15 lowercase keywords or short phrases
+- Array of 10-15 lowercase keywords or short phrases
 - Mix broad niche terms with specific long-tail keywords
 - Maximum 3 words per tag
 - All lowercase, no spaces within single tags
