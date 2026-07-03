@@ -60,57 +60,83 @@ export class CerebrasService {
     title: string,
     content: string,
   ): Promise<CerebrasMetadata> {
-    const completion = await this.client.chat.completions.create({
-      model: this.model,
-      messages: [
-        { role: 'system', content: CEREBRAS_SYSTEM_PROMPT },
-        {
-          role: 'user',
-          content: `Generate optimized video metadata for the following content:\n\nTitle: ${title}\n\nContent:\n${content}`,
-        },
-      ],
-      response_format: { type: 'json_object' },
-      temperature: 0.7,
-      max_tokens: 1024,
-    });
+    const MAX_ATTEMPTS = 3;
+    let lastError: Error | undefined;
 
-    const firstChoice = completion.choices?.[0] as
-      | {
-          message?: { content?: string };
+    for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+      try {
+        const completion = await this.client.chat.completions.create({
+          model: this.model,
+          messages: [
+            { role: 'system', content: CEREBRAS_SYSTEM_PROMPT },
+            {
+              role: 'user',
+              content: `Generate optimized video metadata for the following content:\n\nTitle: ${title}\n\nContent:\n${content}`,
+            },
+          ],
+          response_format: { type: 'json_object' },
+          temperature: 0.7,
+          max_tokens: 1024,
+        });
+
+        const firstChoice = completion.choices?.[0] as
+          | {
+              message?: { content?: string };
+            }
+          | undefined;
+        const rawValue = firstChoice?.message?.content;
+        if (rawValue) {
+          let parsed: Record<string, unknown>;
+          try {
+            parsed = JSON.parse(rawValue.trim()) as Record<string, unknown>;
+          } catch {
+            lastError = new Error('Failed to parse Cerebras metadata response');
+            if (attempt < MAX_ATTEMPTS) {
+              await this.delay(1000);
+              continue;
+            }
+            throw lastError;
+          }
+
+          if (
+            typeof parsed.title !== 'string' ||
+            typeof parsed.description !== 'string' ||
+            !Array.isArray(parsed.tags)
+          ) {
+            return { title, description: '', tags: [] };
+          }
+
+          const tags = parsed.tags.filter(
+            (item: unknown): item is string => typeof item === 'string',
+          );
+
+          return {
+            title: parsed.title,
+            description: parsed.description,
+            tags,
+            category_id:
+              typeof parsed.category_id === 'string'
+                ? parsed.category_id
+                : undefined,
+          };
         }
-      | undefined;
-    const rawValue = firstChoice?.message?.content;
-    if (!rawValue) {
-      throw new Error(
-        'Cerebras returned an empty response for metadata generation',
-      );
+
+        lastError = new Error(
+          'Cerebras returned an empty response for metadata generation',
+        );
+      } catch (error) {
+        lastError = error instanceof Error ? error : new Error(String(error));
+      }
+
+      if (attempt < MAX_ATTEMPTS) {
+        await this.delay(1000);
+      }
     }
 
-    let parsed: Record<string, unknown>;
-    try {
-      parsed = JSON.parse(rawValue.trim()) as Record<string, unknown>;
-    } catch {
-      throw new Error('Failed to parse Cerebras metadata response');
-    }
+    throw lastError!;
+  }
 
-    if (
-      typeof parsed.title !== 'string' ||
-      typeof parsed.description !== 'string' ||
-      !Array.isArray(parsed.tags)
-    ) {
-      return { title, description: '', tags: [] };
-    }
-
-    const tags = parsed.tags.filter(
-      (item: unknown): item is string => typeof item === 'string',
-    );
-
-    return {
-      title: parsed.title,
-      description: parsed.description,
-      tags,
-      category_id:
-        typeof parsed.category_id === 'string' ? parsed.category_id : undefined,
-    };
+  private delay(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 }

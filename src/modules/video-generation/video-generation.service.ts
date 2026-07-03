@@ -738,12 +738,11 @@ export class VideoGenerationService {
   ): Promise<Metadata> {
     const relativeOutputPath = relative(process.cwd(), outputPath);
 
-    try {
-      const aiMetadata = await this.cerebrasService.generateMetadata(
-        title,
-        content,
-      );
-      return await Metadata.create({
+    const aiMetadata = await this.cerebrasService.generateMetadata(
+      title,
+      content,
+    );
+    return await Metadata.create({
         title: aiMetadata.title,
         description: aiMetadata.description,
         tags: aiMetadata.tags,
@@ -760,28 +759,7 @@ export class VideoGenerationService {
         userId: user.id,
         visibility: Visibility.PRIVATE,
       });
-    } catch (error) {
-      console.error(
-        'Auto-metadata generation failed:',
-        error instanceof Error ? error.message : error,
-      );
-      return await Metadata.create({
-        title,
-        description: '',
-        tags: [],
-        file_name: filename,
-        output_video_path: relativeOutputPath,
-        privacy_status: 'private',
-        default_language: 'en',
-        self_declared_made_for_kids: true,
-        channelId: channelDbId,
-        publish_at: new Date(publishedDate),
-        contentId,
-        thumbnailPath,
-        userId: user.id,
-        visibility: Visibility.PRIVATE,
-      });
-    }
+
   }
 
   private async resolveAudioFilePath(
