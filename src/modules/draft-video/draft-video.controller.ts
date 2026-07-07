@@ -28,13 +28,9 @@ import {
   LogActivity,
   ActivityAction,
 } from 'src/common/decorators/log-activity.decorator';
+import type { UserType } from 'src/common/types/user.type';
 
-interface UserPlain {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
-}
+
 
 @ApiTags('draft-video')
 @Controller('draft-video')
@@ -51,7 +47,7 @@ export class DraftVideoController {
     description: 'List of draft videos',
     type: [DraftVideo],
   })
-  async findAll(@CurrentUser() user: UserPlain) {
+  async findAll(@CurrentUser() user: UserType) {
     return this.draftVideoService.findAll(user);
   }
 
@@ -64,7 +60,7 @@ export class DraftVideoController {
     type: DraftVideo,
   })
   @ApiResponse({ status: 404, description: 'Draft video not found' })
-  async findOne(@Param('id') id: string, @CurrentUser() user: UserPlain) {
+  async findOne(@Param('id') id: string, @CurrentUser() user: UserType) {
     return this.draftVideoService.findOne(id, user);
   }
 
@@ -84,7 +80,7 @@ export class DraftVideoController {
   })
   @ApiBody({ type: GenerateVideoDto })
   createDraftFromContent(
-    @CurrentUser() user: UserPlain,
+    @CurrentUser() user: UserType,
     @Param('videoContentId') videoContentId: string,
     @Body() dto: GenerateVideoDto,
   ) {
@@ -115,7 +111,7 @@ export class DraftVideoController {
   })
   @ApiBody({ type: GenerateFromVideoDto })
   createDraftFromBackgroundVideo(
-    @CurrentUser() user: UserPlain,
+    @CurrentUser() user: UserType,
     @Param('videoContentId') videoContentId: string,
     @Param('backgroundVideoId') backgroundVideoId: string,
     @Body() dto: GenerateFromVideoDto,
@@ -142,7 +138,7 @@ export class DraftVideoController {
     description: 'Draft video ID',
   })
   async generateFromDraft(
-    @CurrentUser() user: UserPlain,
+    @CurrentUser() user: UserType,
     @Param('id') id: string,
   ) {
     return this.draftVideoService.generateVideoFromDraft(user, id);
@@ -162,7 +158,7 @@ export class DraftVideoController {
   async update(
     @Param('id') id: string,
     @Body() dto: UpdateDraftVideoDto,
-    @CurrentUser() user: UserPlain,
+    @CurrentUser() user: UserType,
   ) {
     return this.draftVideoService.update(id, dto, user);
   }
@@ -173,7 +169,7 @@ export class DraftVideoController {
   @ApiResponse({ status: 200, description: 'Draft video deleted successfully' })
   @ApiResponse({ status: 404, description: 'Draft video not found' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
-  async remove(@Param('id') id: string, @CurrentUser() user: UserPlain) {
+  async remove(@Param('id') id: string, @CurrentUser() user: UserType) {
     await this.draftVideoService.remove(id, user);
     return { message: 'Draft video deleted successfully' };
   }

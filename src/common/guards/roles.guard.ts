@@ -9,13 +9,8 @@ import { JwtService } from '@nestjs/jwt';
 import { InjectModel } from '@nestjs/sequelize';
 import { Request } from 'express';
 import { User } from 'src/common/models/user.model';
+import { UserType } from '../types/user.type';
 
-interface UserPlain {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
-}
 
 @Injectable()
 export class RolesGuard implements CanActivate {
@@ -53,7 +48,7 @@ export class RolesGuard implements CanActivate {
         throw new ForbiddenException('User not found');
       }
 
-      const plainUser = user.get({ plain: true }) as unknown as UserPlain;
+      const plainUser = user.get({ plain: true }) as unknown as UserType;
       request.user = plainUser;
 
       if (requiredRoles && requiredRoles.length > 0) {

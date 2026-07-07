@@ -30,13 +30,7 @@ import {
   LogActivity,
   ActivityAction,
 } from 'src/common/decorators/log-activity.decorator';
-
-interface UserPlain {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
-}
+import type { UserType } from 'src/common/types/user.type';
 
 @ApiTags('backgrounds')
 @Controller('backgrounds')
@@ -67,7 +61,7 @@ export class BackgroundManagementController {
   async upload(
     @UploadedFile() file: Express.Multer.File,
     @Body('name') name: string,
-    @CurrentUser() user: UserPlain,
+    @CurrentUser() user: UserType,
     @Body('type') type?: string,
     @Body('visibility') visibility?: string,
   ) {
@@ -90,7 +84,7 @@ export class BackgroundManagementController {
     description: 'List of all backgrounds',
     type: [Background],
   })
-  async findAll(@CurrentUser() user: UserPlain) {
+  async findAll(@CurrentUser() user: UserType) {
     return this.backgroundManagementService.findAll(user);
   }
 
@@ -103,7 +97,7 @@ export class BackgroundManagementController {
     type: Background,
   })
   @ApiResponse({ status: 404, description: 'Background not found' })
-  async findOne(@Param('id') id: string, @CurrentUser() user: UserPlain) {
+  async findOne(@Param('id') id: string, @CurrentUser() user: UserType) {
     return this.backgroundManagementService.findOne(id, user);
   }
 
@@ -112,7 +106,7 @@ export class BackgroundManagementController {
   @ApiParam({ name: 'id', description: 'Background ID' })
   @ApiResponse({ status: 200, description: 'Background deleted successfully' })
   @ApiResponse({ status: 404, description: 'Background not found' })
-  async remove(@Param('id') id: string, @CurrentUser() user: UserPlain) {
+  async remove(@Param('id') id: string, @CurrentUser() user: UserType) {
     await this.backgroundManagementService.remove(id, user);
     return { message: 'Background deleted successfully' };
   }

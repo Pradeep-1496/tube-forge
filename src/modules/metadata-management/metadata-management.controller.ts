@@ -21,13 +21,9 @@ import { Metadata } from 'src/common/models/metadata.model';
 import { RolesGuard } from 'src/common/guards/roles.guard';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
+import type { UserType } from 'src/common/types/user.type';
 
-interface UserPlain {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
-}
+
 
 @ApiTags('metadata')
 @Controller('metadata')
@@ -53,7 +49,7 @@ export class MetadataManagementController {
   async update(
     @Param('id') id: string,
     @Body() dto: UpdateMetadataDto,
-    @CurrentUser() _user: UserPlain,
+    @CurrentUser() _user: UserType,
   ) {
     return this.metadataManagementService.update(id, dto);
   }
@@ -63,7 +59,7 @@ export class MetadataManagementController {
   @ApiParam({ name: 'id', description: 'Metadata ID' })
   @ApiResponse({ status: 200, description: 'Metadata deleted successfully' })
   @ApiResponse({ status: 404, description: 'Metadata not found' })
-  async remove(@Param('id') id: string, @CurrentUser() user: UserPlain) {
+  async remove(@Param('id') id: string, @CurrentUser() user: UserType) {
     await this.metadataManagementService.remove(id, user);
     return { message: 'Metadata deleted successfully' };
   }
@@ -75,7 +71,7 @@ export class MetadataManagementController {
     description: 'List of all metadata',
     type: [Metadata],
   })
-  async findAll(@CurrentUser() user: UserPlain) {
+  async findAll(@CurrentUser() user: UserType) {
     return this.metadataManagementService.findAll(user);
   }
 
@@ -88,7 +84,7 @@ export class MetadataManagementController {
     type: Metadata,
   })
   @ApiResponse({ status: 404, description: 'Metadata not found' })
-  async findOne(@Param('id') id: string, @CurrentUser() user: UserPlain) {
+  async findOne(@Param('id') id: string, @CurrentUser() user: UserType) {
     return this.metadataManagementService.findOne(id, user);
   }
 }

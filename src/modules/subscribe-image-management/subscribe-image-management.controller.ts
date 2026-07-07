@@ -32,13 +32,7 @@ import {
   LogActivity,
   ActivityAction,
 } from 'src/common/decorators/log-activity.decorator';
-
-interface UserPlain {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
-}
+import type { UserType } from 'src/common/types/user.type';
 
 @ApiTags('subscribe-images')
 @Controller('subscribe-images')
@@ -69,7 +63,7 @@ export class SubscribeImageManagementController {
   async upload(
     @UploadedFile() file: Express.Multer.File,
     @Body('name') name: string,
-    @CurrentUser() user: UserPlain,
+    @CurrentUser() user: UserType,
     @Body('type') type?: string,
     @Body('visibility') visibility?: string,
   ) {
@@ -92,7 +86,7 @@ export class SubscribeImageManagementController {
     description: 'List of all subscribe images',
     type: [SubscribeImage],
   })
-  async findAll(@CurrentUser() user: UserPlain) {
+  async findAll(@CurrentUser() user: UserType) {
     return this.subscribeImageManagementService.findAll(user);
   }
 
@@ -105,7 +99,7 @@ export class SubscribeImageManagementController {
     type: SubscribeImage,
   })
   @ApiResponse({ status: 404, description: 'Subscribe image not found' })
-  async findOne(@Param('id') id: string, @CurrentUser() user: UserPlain) {
+  async findOne(@Param('id') id: string, @CurrentUser() user: UserType) {
     return this.subscribeImageManagementService.findOne(id, user);
   }
 
@@ -128,7 +122,7 @@ export class SubscribeImageManagementController {
   @UseInterceptors(FileInterceptor('file'))
   async update(
     @Param('id') id: string,
-    @CurrentUser() user: UserPlain,
+    @CurrentUser() user: UserType,
     @UploadedFile() file?: Express.Multer.File,
     @Body('name') name?: string,
     @Body('type') type?: string,
@@ -154,7 +148,7 @@ export class SubscribeImageManagementController {
     description: 'Subscribe image deleted successfully',
   })
   @ApiResponse({ status: 404, description: 'Subscribe image not found' })
-  async remove(@Param('id') id: string, @CurrentUser() user: UserPlain) {
+  async remove(@Param('id') id: string, @CurrentUser() user: UserType) {
     await this.subscribeImageManagementService.remove(id, user);
     return { message: 'Subscribe image deleted successfully' };
   }

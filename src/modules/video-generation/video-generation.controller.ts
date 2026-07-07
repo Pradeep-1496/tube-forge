@@ -18,13 +18,9 @@ import {
   ActivityAction,
 } from 'src/common/decorators/log-activity.decorator';
 import { GenerateVideoFromTemplateContentDto } from './dto/generate-video-from-template-content.dto';
+import type { UserType } from 'src/common/types/user.type';
 
-interface UserPlain {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
-}
+
 
 @ApiTags('video-generation')
 @Controller('video-generation')
@@ -52,7 +48,7 @@ export class VideoGenerationController {
   })
   @ApiBody({ type: GenerateVideoDto })
   generateVideo(
-    @CurrentUser() user: UserPlain,
+    @CurrentUser() user: UserType,
     @Param('id') id: string,
     @Body() dto: GenerateVideoDto,
   ) {
@@ -79,7 +75,7 @@ export class VideoGenerationController {
   })
   @ApiBody({ type: GenerateFromVideoDto })
   generateVideoFromBackgroundVideo(
-    @CurrentUser() user: UserPlain,
+    @CurrentUser() user: UserType,
     @Param('videoContentId') videoContentId: string,
     @Param('backgroundVideoId') backgroundVideoId: string,
     @Body() dto: GenerateFromVideoDto,
@@ -112,7 +108,7 @@ export class VideoGenerationController {
   })
   @ApiBody({ type: GenerateVideoFromTemplateDto })
   generateVideoFromTemplate(
-    @CurrentUser() user: UserPlain,
+    @CurrentUser() user: UserType,
     @Param('templateId') templateId: string,
     @Body() dto: GenerateVideoFromTemplateDto,
   ) {
@@ -139,7 +135,7 @@ export class VideoGenerationController {
   })
   @ApiBody({ type: GenerateVideoFromTemplateContentDto })
   generateVideoFromContent(
-    @CurrentUser() user: UserPlain,
+    @CurrentUser() user: UserType,
     @Param('templateId') templateId: string,
     @Param('contentId') contentId: string,
     @Body() dto: GenerateVideoFromTemplateContentDto,

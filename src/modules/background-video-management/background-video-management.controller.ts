@@ -30,13 +30,7 @@ import {
   LogActivity,
   ActivityAction,
 } from 'src/common/decorators/log-activity.decorator';
-
-interface UserPlain {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
-}
+import type { UserType } from 'src/common/types/user.type';
 
 @ApiTags('background-videos')
 @Controller('background-videos')
@@ -67,7 +61,7 @@ export class BackgroundVideoManagementController {
   async upload(
     @UploadedFile() file: Express.Multer.File,
     @Body('name') name: string,
-    @CurrentUser() user: UserPlain,
+    @CurrentUser() user: UserType,
     @Body('type') type?: string,
     @Body('visibility') visibility?: string,
   ) {
@@ -90,7 +84,7 @@ export class BackgroundVideoManagementController {
     description: 'List of all background videos',
     type: [BackgroundVideo],
   })
-  async findAll(@CurrentUser() user: UserPlain) {
+  async findAll(@CurrentUser() user: UserType) {
     return this.backgroundVideoManagementService.findAll(user);
   }
 
@@ -103,7 +97,7 @@ export class BackgroundVideoManagementController {
     type: BackgroundVideo,
   })
   @ApiResponse({ status: 404, description: 'Background video not found' })
-  async findOne(@Param('id') id: string, @CurrentUser() user: UserPlain) {
+  async findOne(@Param('id') id: string, @CurrentUser() user: UserType) {
     return this.backgroundVideoManagementService.findOne(id, user);
   }
 
@@ -115,7 +109,7 @@ export class BackgroundVideoManagementController {
     description: 'Background video deleted successfully',
   })
   @ApiResponse({ status: 404, description: 'Background video not found' })
-  async remove(@Param('id') id: string, @CurrentUser() user: UserPlain) {
+  async remove(@Param('id') id: string, @CurrentUser() user: UserType) {
     await this.backgroundVideoManagementService.remove(id, user);
     return { message: 'Background video deleted successfully' };
   }

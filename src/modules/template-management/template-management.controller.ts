@@ -27,13 +27,8 @@ import {
   LogActivity,
   ActivityAction,
 } from 'src/common/decorators/log-activity.decorator';
+import type { UserType } from 'src/common/types/user.type';
 
-interface UserPlain {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
-}
 
 @ApiTags('templates')
 @Controller('templates')
@@ -59,7 +54,7 @@ export class TemplateManagementController {
     type: Template,
   })
   @ApiResponse({ status: 400, description: 'Bad request' })
-  async create(@CurrentUser() user: UserPlain, @Body() dto: CreateTemplateDto) {
+  async create(@CurrentUser() user: UserType, @Body() dto: CreateTemplateDto) {
     return this.templateManagementService.create({
       ...dto,
       userId: user.id,
@@ -73,7 +68,7 @@ export class TemplateManagementController {
     description: 'List of all templates',
     type: [Template],
   })
-  async findAll(@CurrentUser() user: UserPlain) {
+  async findAll(@CurrentUser() user: UserType) {
     return this.templateManagementService.findAll(user);
   }
 
@@ -86,7 +81,7 @@ export class TemplateManagementController {
     type: Template,
   })
   @ApiResponse({ status: 404, description: 'Template not found' })
-  async findOne(@Param('id') id: string, @CurrentUser() user: UserPlain) {
+  async findOne(@Param('id') id: string, @CurrentUser() user: UserType) {
     return this.templateManagementService.findOne(id, user);
   }
 
@@ -103,7 +98,7 @@ export class TemplateManagementController {
   async update(
     @Param('id') id: string,
     @Body() dto: UpdateTemplateDto,
-    @CurrentUser() user: UserPlain,
+    @CurrentUser() user: UserType,
   ) {
     return this.templateManagementService.update(id, dto, user);
   }
@@ -113,7 +108,7 @@ export class TemplateManagementController {
   @ApiParam({ name: 'id', description: 'Template ID' })
   @ApiResponse({ status: 200, description: 'Template deleted successfully' })
   @ApiResponse({ status: 404, description: 'Template not found' })
-  async remove(@Param('id') id: string, @CurrentUser() user: UserPlain) {
+  async remove(@Param('id') id: string, @CurrentUser() user: UserType) {
     await this.templateManagementService.remove(id, user);
     return { message: 'Template deleted successfully' };
   }

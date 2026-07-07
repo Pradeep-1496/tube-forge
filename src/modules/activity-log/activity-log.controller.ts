@@ -20,13 +20,7 @@ import { ActivityLog } from 'src/common/models/activity-log.model';
 import { RolesGuard } from 'src/common/guards/roles.guard';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { CurrentUser } from 'src/common/decorators/current-user.decorator';
-
-interface UserPlain {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
-}
+import type { UserType } from 'src/common/types/user.type';
 
 @ApiTags('activity-log')
 @Controller('activity-log')
@@ -52,10 +46,11 @@ export class ActivityLogController {
     type: [ActivityLog],
   })
   async getTimeline(
-    @CurrentUser() user: UserPlain,
+    @CurrentUser() user: UserType,
     @Query('limit') limit?: string,
   ): Promise<ActivityLog[]> {
     const maxLimit = Math.min(Number(limit) || 100, 500);
+
     return this.activityLogService.findByUserId(user.id, maxLimit);
   }
 
@@ -90,7 +85,7 @@ export class ActivityLogController {
     type: [ActivityLog],
   })
   async findAll(
-    @CurrentUser() user: UserPlain,
+    @CurrentUser() user: UserType,
     @Query('action') action?: string,
     @Query('resourceType') resourceType?: string,
     @Query('userId') userId?: string,
@@ -119,7 +114,7 @@ export class ActivityLogController {
   })
   @ApiResponse({ status: 404, description: 'Activity log not found' })
   async findOne(
-    @CurrentUser() user: UserPlain,
+    @CurrentUser() user: UserType,
     @Param('id') id: string,
   ): Promise<ActivityLog> {
     const log = await this.activityLogService.findOne(id);

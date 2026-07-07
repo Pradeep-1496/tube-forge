@@ -27,13 +27,7 @@ import {
   LogActivity,
   ActivityAction,
 } from 'src/common/decorators/log-activity.decorator';
-
-interface UserPlain {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
-}
+import type { UserType } from 'src/common/types/user.type';
 
 @ApiTags('channels')
 @Controller('channels')
@@ -59,7 +53,7 @@ export class ChannelManagementController {
     type: Channel,
   })
   @ApiResponse({ status: 400, description: 'Bad request' })
-  async create(@CurrentUser() user: UserPlain, @Body() dto: CreateChannelDto) {
+  async create(@CurrentUser() user: UserType, @Body() dto: CreateChannelDto) {
     return this.channelManagementService.create({
       ...dto,
       userId: user.id,
@@ -73,7 +67,7 @@ export class ChannelManagementController {
     description: 'List of channels',
     type: [Channel],
   })
-  async findAll(@CurrentUser() user: UserPlain) {
+  async findAll(@CurrentUser() user: UserType) {
     return this.channelManagementService.findAll(user);
   }
 
@@ -86,7 +80,7 @@ export class ChannelManagementController {
     type: Channel,
   })
   @ApiResponse({ status: 404, description: 'Channel not found' })
-  async findOne(@Param('id') id: string, @CurrentUser() user: UserPlain) {
+  async findOne(@Param('id') id: string, @CurrentUser() user: UserType) {
     return this.channelManagementService.findOne(id, user);
   }
 
@@ -103,7 +97,7 @@ export class ChannelManagementController {
   async update(
     @Param('id') id: string,
     @Body() dto: UpdateChannelDto,
-    @CurrentUser() user: UserPlain,
+    @CurrentUser() user: UserType,
   ) {
     return this.channelManagementService.update(id, dto, user);
   }
@@ -113,7 +107,7 @@ export class ChannelManagementController {
   @ApiParam({ name: 'id', description: 'Channel ID' })
   @ApiResponse({ status: 200, description: 'Channel deleted successfully' })
   @ApiResponse({ status: 404, description: 'Channel not found' })
-  async remove(@Param('id') id: string, @CurrentUser() user: UserPlain) {
+  async remove(@Param('id') id: string, @CurrentUser() user: UserType) {
     await this.channelManagementService.remove(id, user);
     return { message: 'Channel deleted successfully' };
   }

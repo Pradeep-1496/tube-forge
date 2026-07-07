@@ -30,13 +30,9 @@ import {
   LogActivity,
   ActivityAction,
 } from 'src/common/decorators/log-activity.decorator';
+import type { UserType } from 'src/common/types/user.type';
 
-interface UserPlain {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
-}
+
 
 @ApiTags('audios')
 @Controller('audios')
@@ -67,7 +63,7 @@ export class AudioManagementController {
   async upload(
     @UploadedFile() file: Express.Multer.File,
     @Body('name') name: string,
-    @CurrentUser() user: UserPlain,
+    @CurrentUser() user: UserType,
     @Body('visibility') visibility?: string,
   ) {
     if (!name) {
@@ -83,7 +79,7 @@ export class AudioManagementController {
     description: 'List of all audios',
     type: [Audio],
   })
-  async findAll(@CurrentUser() user: UserPlain) {
+  async findAll(@CurrentUser() user: UserType) {
     return this.audioManagementService.findAll(user);
   }
 
@@ -96,7 +92,7 @@ export class AudioManagementController {
     type: Audio,
   })
   @ApiResponse({ status: 404, description: 'Audio not found' })
-  async findOne(@Param('id') id: string, @CurrentUser() user: UserPlain) {
+  async findOne(@Param('id') id: string, @CurrentUser() user: UserType) {
     return this.audioManagementService.findOne(id, user);
   }
 
@@ -105,7 +101,7 @@ export class AudioManagementController {
   @ApiParam({ name: 'id', description: 'Audio ID' })
   @ApiResponse({ status: 200, description: 'Audio deleted successfully' })
   @ApiResponse({ status: 404, description: 'Audio not found' })
-  async remove(@Param('id') id: string, @CurrentUser() user: UserPlain) {
+  async remove(@Param('id') id: string, @CurrentUser() user: UserType) {
     await this.audioManagementService.remove(id, user);
     return { message: 'Audio deleted successfully' };
   }

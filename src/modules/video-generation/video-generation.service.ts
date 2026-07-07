@@ -29,13 +29,7 @@ import { GenerateVideoDto } from './dto/generate-video.dto';
 import { GenerateVideoFromTemplateDto } from './dto/generate-video-from-template.dto';
 import { Visibility } from 'src/common/enums/visibility.enum';
 import { GenerateVideoFromTemplateContentDto } from './dto/generate-video-from-template-content.dto';
-
-interface UserPlain {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
-}
+import type { UserType } from 'src/common/types/user.type';
 
 @Injectable()
 export class VideoGenerationService {
@@ -43,16 +37,15 @@ export class VideoGenerationService {
     private readonly htmlToImageService: HtmlToImageService,
     private readonly imageToVideoService: ImageToVideoService,
     private readonly audioService: AudioService,
-    private readonly backgroundProvider: BackgroundImageProvider,
     private readonly cerebrasService: CerebrasService,
   ) {}
 
-  private isAdmin(user: UserPlain): boolean {
+  private isAdmin(user: UserType): boolean {
     return user.role === 'admin';
   }
 
   async generateVideo(
-    user: UserPlain,
+    user: UserType,
     id: string,
     dto?: GenerateVideoDto,
   ): Promise<{ outputPath: string; metadata: Metadata }> {
@@ -211,7 +204,7 @@ export class VideoGenerationService {
   }
 
   async generateVideoFromBackgroundVideo(
-    user: UserPlain,
+    user: UserType,
     metadataId: string,
     backgroundVideoId: string,
     audioId?: string,
@@ -408,7 +401,7 @@ export class VideoGenerationService {
   }
 
   async generateVideoFromTemplateContent(
-    user: UserPlain,
+    user: UserType,
     templateId: string,
     contentId: string,
     dto: GenerateVideoFromTemplateContentDto,
@@ -433,7 +426,7 @@ export class VideoGenerationService {
   }
 
   async generateVideoFromTemplate(
-    user: UserPlain,
+    user: UserType,
     templateId: string,
     dto: GenerateVideoFromTemplateDto,
   ): Promise<{ outputPath: string; metadata: Metadata }> {
@@ -734,7 +727,7 @@ export class VideoGenerationService {
     publishedDate: string,
     contentId: string | null,
     thumbnailPath: string,
-    user: UserPlain,
+    user: UserType,
   ): Promise<Metadata> {
     const relativeOutputPath = relative(process.cwd(), outputPath);
 
@@ -743,28 +736,27 @@ export class VideoGenerationService {
       content,
     );
     return await Metadata.create({
-        title: aiMetadata.title,
-        description: aiMetadata.description,
-        tags: aiMetadata.tags,
-        file_name: filename,
-        output_video_path: relativeOutputPath,
-        privacy_status: 'private',
-        default_language: 'en',
-        self_declared_made_for_kids: true,
-        channelId: channelDbId,
-        publish_at: new Date(publishedDate),
-        category_id: aiMetadata.category_id,
-        contentId,
-        thumbnailPath,
-        userId: user.id,
-        visibility: Visibility.PRIVATE,
-      });
-
+      title: aiMetadata.title,
+      description: aiMetadata.description,
+      tags: aiMetadata.tags,
+      file_name: filename,
+      output_video_path: relativeOutputPath,
+      privacy_status: 'private',
+      default_language: 'en',
+      self_declared_made_for_kids: true,
+      channelId: channelDbId,
+      publish_at: new Date(publishedDate),
+      category_id: aiMetadata.category_id,
+      contentId,
+      thumbnailPath,
+      userId: user.id,
+      visibility: Visibility.PRIVATE,
+    });
   }
 
   private async resolveAudioFilePath(
     audioId: string | undefined,
-    user: UserPlain,
+    user: UserType,
   ): Promise<string | null> {
     if (!audioId) {
       return null;
@@ -789,7 +781,7 @@ export class VideoGenerationService {
 
   private async buildBackgroundConfig(
     backgroundId?: string,
-    user?: UserPlain,
+    user?: UserType,
   ): Promise<BackgroundImageConfig> {
     if (!backgroundId) {
       return { enabled: false, opacity: 0.45 };

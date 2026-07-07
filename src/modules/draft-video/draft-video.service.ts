@@ -19,24 +19,18 @@ import { Visibility } from 'src/common/enums/visibility.enum';
 import { VideoGenerationService } from 'src/modules/video-generation/video-generation.service';
 
 import { UpdateDraftVideoDto } from './dto/update-draft-video.dto';
-
-interface UserPlain {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
-}
+import type { UserType } from 'src/common/types/user.type';
 
 @Injectable()
 export class DraftVideoService {
   constructor(
     private readonly videoGenerationService: VideoGenerationService,
   ) {}
-  private isAdmin(user: UserPlain): boolean {
+  private isAdmin(user: UserType): boolean {
     return user.role === 'admin';
   }
 
-  async findAll(user: UserPlain): Promise<DraftVideo[]> {
+  async findAll(user: UserType): Promise<DraftVideo[]> {
     if (this.isAdmin(user)) {
       return DraftVideo.findAll({
         order: [['created_at', 'DESC']],
@@ -72,7 +66,7 @@ export class DraftVideoService {
     });
   }
 
-  async findOne(id: string, user: UserPlain): Promise<DraftVideo> {
+  async findOne(id: string, user: UserType): Promise<DraftVideo> {
     const record = await DraftVideo.findByPk(id, {
       include: [
         {
@@ -100,7 +94,7 @@ export class DraftVideoService {
   async update(
     id: string,
     dto: UpdateDraftVideoDto,
-    user: UserPlain,
+    user: UserType,
   ): Promise<DraftVideo> {
     const draft = await DraftVideo.findByPk(id);
     if (!draft) {
@@ -190,7 +184,7 @@ export class DraftVideoService {
     return draft.reload();
   }
 
-  async remove(id: string, user: UserPlain): Promise<void> {
+  async remove(id: string, user: UserType): Promise<void> {
     const draft = await DraftVideo.findByPk(id);
     if (!draft) {
       throw new NotFoundException(`Draft video with ID ${id} not found`);
@@ -204,7 +198,7 @@ export class DraftVideoService {
   }
 
   async generateVideoFromDraft(
-    user: UserPlain,
+    user: UserType,
     draftId: string,
   ): Promise<{ outputPath: string; metadata: Metadata }> {
     const draft = await DraftVideo.findByPk(draftId);
@@ -270,7 +264,7 @@ export class DraftVideoService {
   }
 
   async createDraftFromContent(
-    user: UserPlain,
+    user: UserType,
     videoContentId: string,
     dto: {
       backgroundId?: string;
@@ -382,7 +376,7 @@ export class DraftVideoService {
   }
 
   async createDraftFromBackgroundVideo(
-    user: UserPlain,
+    user: UserType,
     videoContentId: string,
     backgroundVideoId: string,
     dto: {
