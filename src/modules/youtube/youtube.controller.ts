@@ -98,7 +98,7 @@ export class YoutubeController {
       return res.redirect(
         `${process.env.FRONTEND_URL || 'http://localhost:4200'}/youtube/callback?channelId=${channel.channelId}&channelName=${encodeURIComponent(channel.name)}`,
       );
-    } catch (e) {
+    } catch (e: any) {
       const msg = e?.message ?? 'callback_failed';
       return res.redirect(
         `${process.env.FRONTEND_URL || 'http://localhost:4200'}/youtube/callback?error=${encodeURIComponent(msg)}`,
